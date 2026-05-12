@@ -12,15 +12,36 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  keycloak-db:
+    image: postgres:16
+    container_name: securehub-keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - keycloak_postgres_data:/var/lib/postgresql/data
+
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: securehub-keycloak
     command: start-dev
+    depends_on:
+      - keycloak-db
     environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+
     ports:
       - "8081:8080"
 
 volumes:
   postgres_data:
+  keycloak_postgres_data:
