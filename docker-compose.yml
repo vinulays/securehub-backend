@@ -1,4 +1,17 @@
 services:
+
+  postgres:
+    image: postgres:16
+    container_name: securehub-postgres
+    environment:
+      POSTGRES_DB: securehub
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: securehub-keycloak
@@ -8,3 +21,6 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
       - "8081:8080"
+
+volumes:
+  postgres_data:
