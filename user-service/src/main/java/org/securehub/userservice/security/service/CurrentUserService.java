@@ -3,6 +3,7 @@ package org.securehub.userservice.security.service;
 import lombok.RequiredArgsConstructor;
 import org.securehub.userservice.security.model.AuthenticatedUser;
 import org.securehub.userservice.user.entity.User;
+import org.securehub.userservice.user.repository.UserRepository;
 import org.securehub.userservice.user.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 public class CurrentUserService {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     public AuthenticatedUser getCurrentUser(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -35,5 +37,19 @@ public class CurrentUserService {
                 null
         );
 
+    }
+
+    public User getCurrentDatabaseUser() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+
+        String keycloakUserId = jwt.getSubject();
+
+        return userRepository.findByKeycloakUserId(keycloakUserId)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
     }
 }
