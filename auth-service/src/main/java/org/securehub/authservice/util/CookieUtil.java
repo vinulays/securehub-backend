@@ -1,6 +1,7 @@
 package org.securehub.authservice.util;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class CookieUtil {
@@ -33,6 +34,21 @@ public class CookieUtil {
         cookie.setMaxAge(0);
 
         response.addCookie(cookie);
+    }
+
+    public static String extractToken(HttpServletRequest request, String name) {
+
+        if (request.getCookies() == null) {
+            return null;
+        }
+
+        for (Cookie cookie : request.getCookies()) {
+            if (cookie.getName().equals(name)) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
     }
 }
 
