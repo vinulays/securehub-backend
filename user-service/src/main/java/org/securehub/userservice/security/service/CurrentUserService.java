@@ -10,6 +10,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class CurrentUserService {
@@ -28,13 +31,20 @@ public class CurrentUserService {
         String firstName = jwt.getClaimAsString("given_name");
         String lastName = jwt.getClaimAsString("family_name");
 
+        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+
+        List<String> roles =
+                (List<String>) realmAccess.get("roles");
+
         User user = userService.getOrCreateUser(keycloakUserId, email, firstName, lastName);
 
         return new AuthenticatedUser(
                 user.getId(),
                 keycloakUserId,
                 email,
-                null
+                user.getFirstName(),
+                user.getLastName(),
+                roles
         );
 
     }
