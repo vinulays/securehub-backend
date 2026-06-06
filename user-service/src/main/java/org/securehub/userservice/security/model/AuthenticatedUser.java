@@ -7,6 +7,8 @@ public record AuthenticatedUser(
         UUID userId,
         String keycloakUserId,
         String email,
+        String firstName,
+        String lastName,
         List<String> roles
 ) {
 }
