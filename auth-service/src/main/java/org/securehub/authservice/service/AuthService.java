@@ -3,7 +3,10 @@ package org.securehub.authservice.service;
 import lombok.RequiredArgsConstructor;
 import org.securehub.authservice.dto.KeycloakTokenResponse;
 import org.securehub.authservice.dto.LoginRequest;
+import org.securehub.authservice.exception.InvalidCredentialsException;
+import org.securehub.authservice.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -32,6 +35,13 @@ public class AuthService {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .bodyValue(buildLoginBody(request))
                 .retrieve()
+                .onStatus(
+                        HttpStatusCode::is4xxClientError,
+                        response -> response.bodyToMono(String.class)
+                                .map(_ -> new InvalidCredentialsException(
+                                        "Invalid username or password"
+                                ))
+                )
                 .bodyToMono(KeycloakTokenResponse.class)
                 .block();
     }
@@ -43,6 +53,13 @@ public class AuthService {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .bodyValue(buildRefreshTokenBody(refreshToken))
                 .retrieve()
+                .onStatus(
+                        HttpStatusCode::is4xxClientError,
+                        response -> response.bodyToMono(String.class)
+                                .map(_ -> new UnauthorizedException(
+                                        "Invalid refresh token"
+                                ))
+                )
                 .bodyToMono(KeycloakTokenResponse.class)
                 .block();
     }

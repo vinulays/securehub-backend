@@ -2,6 +2,7 @@ package org.securehub.authservice.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.securehub.authservice.dto.KeycloakTokenResponse;
 import org.securehub.authservice.dto.LoginRequest;
@@ -24,7 +25,7 @@ public class AuthController {
     private final JwtDecoder jwtDecoder;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
 
         KeycloakTokenResponse token = authService.login(request);
 
@@ -37,10 +38,6 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@CookieValue(value = "refresh_token", required = false) String refreshToken, HttpServletResponse response) {
-
-        if (refreshToken == null) {
-            return ResponseEntity.status(401).body("Missing refresh token");
-        }
 
         KeycloakTokenResponse token = authService.refresh(refreshToken);
 
