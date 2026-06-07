@@ -5,6 +5,14 @@ spring:
   application:
     name: auth-service
 
+eureka:
+  instance:
+    prefer-ip-address: true
+
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
 keycloak:
   token-url: http://localhost:8081/realms/securehub/protocol/openid-connect/token
   cert-url: http://localhost:8081/realms/securehub/protocol/openid-connect/certs
