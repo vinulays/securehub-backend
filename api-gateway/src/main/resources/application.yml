@@ -19,10 +19,11 @@ spring:
               uri: http://localhost:8083
               predicates:
                 - Path=/api/users/**
+              filters:
+                - JwtCookie
 
         default-filters:
           - PreserveHostHeader
-          - AddRequestHeader=X-Request-From, gateway
 
 logging:
    level:
