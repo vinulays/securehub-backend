@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
 
     Optional<User> findByKeycloakUserId(String keycloakUserId);
+
+    Boolean existsByEmail(String email);
 }
