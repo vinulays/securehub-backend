@@ -1,6 +1,6 @@
-package org.securehub.userservice.security.model;
+package org.securehub.userservice.model;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public record AuthenticatedUser(
@@ -9,6 +9,6 @@ public record AuthenticatedUser(
         String email,
         String firstName,
         String lastName,
-        List<String> roles
+        Set<String> permissions
 ) {
 }

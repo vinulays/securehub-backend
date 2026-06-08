@@ -1,11 +1,8 @@
-package org.securehub.userservice.membership.entity;
+package org.securehub.userservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.securehub.userservice.common.entity.BaseEntity;
-import org.securehub.userservice.organization.entity.Organization;
 import org.securehub.userservice.role.OrganizationRole;
-import org.securehub.userservice.user.entity.User;
 
 @Entity
 @Table(

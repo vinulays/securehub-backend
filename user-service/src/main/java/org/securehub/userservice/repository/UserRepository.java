@@ -1,6 +1,6 @@
-package org.securehub.userservice.user.repository;
+package org.securehub.userservice.repository;
 
-import org.securehub.userservice.user.entity.User;
+import org.securehub.userservice.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
