@@ -1,9 +1,7 @@
-package org.securehub.userservice.organization.entity;
+package org.securehub.userservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.securehub.userservice.common.entity.BaseEntity;
-import org.securehub.userservice.membership.entity.OrganizationMembership;
 
 import java.util.ArrayList;
 import java.util.List;
