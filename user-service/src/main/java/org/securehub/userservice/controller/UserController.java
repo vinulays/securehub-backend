@@ -3,6 +3,7 @@ package org.securehub.userservice.controller;
 import lombok.RequiredArgsConstructor;
 import org.securehub.userservice.model.AuthenticatedUser;
 import org.securehub.userservice.service.UserService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

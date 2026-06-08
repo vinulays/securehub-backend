@@ -34,7 +34,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         "Validation failed",
                         400,
-                        LocalDateTime.now(),
                         errors
                 ));
     }
@@ -49,7 +48,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         ex.getMessage(),
                         HttpStatus.UNAUTHORIZED.value(),
-                        LocalDateTime.now(),
                         null
                 ));
     }
@@ -63,7 +61,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         ex.getMessage(),
                         HttpStatus.UNAUTHORIZED.value(),
-                        LocalDateTime.now(),
                         null
                 ));
     }
@@ -77,7 +74,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         "Token expired or invalid",
                         HttpStatus.UNAUTHORIZED.value(),
-                        LocalDateTime.now(),
                         null
                 ));
     }
@@ -91,7 +87,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         "Something went wrong",
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        LocalDateTime.now(),
                         null
                 ));
     }
