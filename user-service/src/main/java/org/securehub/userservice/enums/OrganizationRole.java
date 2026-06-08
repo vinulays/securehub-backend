@@ -1,4 +1,4 @@
-package org.securehub.userservice.role;
+package org.securehub.userservice.enums;
 
 public enum OrganizationRole {
     ROLE_ORG_ADMIN,
