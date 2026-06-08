@@ -1,4 +1,4 @@
-package org.securehub.userservice.role;
+package org.securehub.userservice.enums;
 
 import java.util.List;
 import java.util.Map;

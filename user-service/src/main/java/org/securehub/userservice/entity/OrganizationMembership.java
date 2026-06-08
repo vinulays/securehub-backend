@@ -2,7 +2,7 @@ package org.securehub.userservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.securehub.userservice.role.OrganizationRole;
+import org.securehub.userservice.enums.OrganizationRole;
 
 @Entity
 @Table(

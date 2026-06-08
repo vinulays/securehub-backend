@@ -1,10 +1,18 @@
 package org.securehub.userservice.service;
 
 import lombok.RequiredArgsConstructor;
+import org.securehub.userservice.dto.UserResponse;
+import org.securehub.userservice.dto.UserSearchRequest;
 import org.securehub.userservice.entity.User;
+import org.securehub.userservice.enums.RolePermissionMapping;
 import org.securehub.userservice.model.AuthenticatedUser;
 import org.securehub.userservice.repository.UserRepository;
-import org.securehub.userservice.role.RolePermissionMapping;
+import org.securehub.userservice.specification.UserSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -20,6 +28,23 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    public Page<UserResponse> searchUsers(UserSearchRequest request) {
+        Specification<User> specification = UserSpecification.search(request);
+
+        String sortBy = ALLOWED_SORT_FIELDS.contains(request.getSortBy()) ? request.getSortBy() : "createdAt";
+
+        Sort sort = Sort.by(
+                Sort.Direction.fromString(request.getSortDirection().toString()),
+                sortBy
+        );
+
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
+
+        return userRepository
+                .findAll(specification, pageable)
+                .map(UserResponse::fromEntity);
+    }
 
     public AuthenticatedUser getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -73,4 +98,11 @@ public class UserService {
                     return userRepository.save(user);
                 });
     }
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "firstName",
+            "lastName",
+            "email",
+            "createdAt"
+    );
 }
