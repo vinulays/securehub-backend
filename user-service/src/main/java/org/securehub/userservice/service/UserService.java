@@ -198,6 +198,32 @@ public class UserService {
                 .map(UserResponse::fromEntity);
     }
 
+    public UserResponse getUserDetails(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        return UserResponse.fromEntity(user);
+    }
+
+    @Transactional
+    public UserResponse updateUserStatus(
+            UUID userId,
+            boolean active
+    ) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
+
+        user.setIsActive(active);
+
+        keycloakAdminService.updateUserStatus(user.getKeycloakUserId(), active);
+
+        return UserResponse.fromEntity(
+                userRepository.save(user)
+        );
+    }
+
     public AuthenticatedUser getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
