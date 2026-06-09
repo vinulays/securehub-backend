@@ -71,4 +71,43 @@ public class GlobalExceptionHandler {
                         null
                 ));
     }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyExistingUser(
+            UserAlreadyExistsException ex
+    ) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(InvalidInvitationException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidInvitation(
+            InvalidInvitationException ex
+    ) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(
+            UserNotFoundException ex
+    ) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.NOT_FOUND.value(),
+                        null
+                ));
+    }
 }

@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.securehub.userservice.dto.*;
 import org.securehub.userservice.model.AuthenticatedUser;
-import org.securehub.userservice.producer.UserEventProducer;
 import org.securehub.userservice.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -19,27 +18,11 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-    private final UserEventProducer producer;
-
-    @PostMapping("/event")
-    public String publishEvent() {
-
-        producer.publishUserCreated(
-                new UserCreatedEvent(
-                        UUID.randomUUID(),
-                        "test@gmail.com",
-                        "Vinula",
-                        "Senarathne",
-                        "token123"
-                )
-        );
-
-        return "Event published";
-    }
 
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
+
         return userService.createUser(request);
     }
 
@@ -48,6 +31,19 @@ public class UserController {
     public ResponseEntity<Page<UserResponse>> getUsers(@Valid @RequestBody UserSearchRequest request) {
 
         return ResponseEntity.ok(userService.searchUsers(request));
+    }
+
+    @PostMapping("/invitations/accept")
+    public ResponseEntity<Void> acceptInvitation(@Valid @RequestBody AcceptInvitationRequest request) {
+        userService.acceptInvitation(request);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/invitations/{token}")
+    public ResponseEntity<InvitationValidationResponse> validateInvitation(@PathVariable String token) {
+
+        return ResponseEntity.ok(userService.validateInvitation(token));
     }
 
     @GetMapping("/me")
@@ -59,6 +55,7 @@ public class UserController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request) {
+
         return userService.updateUser(id, request);
     }
 }

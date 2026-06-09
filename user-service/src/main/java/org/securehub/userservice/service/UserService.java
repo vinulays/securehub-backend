@@ -1,15 +1,17 @@
 package org.securehub.userservice.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.securehub.userservice.dto.CreateUserRequest;
-import org.securehub.userservice.dto.UpdateUserRequest;
-import org.securehub.userservice.dto.UserResponse;
-import org.securehub.userservice.dto.UserSearchRequest;
+import org.securehub.userservice.dto.*;
 import org.securehub.userservice.entity.User;
+import org.securehub.userservice.entity.UserInvitation;
 import org.securehub.userservice.enums.RolePermissionMapping;
+import org.securehub.userservice.exception.InvalidInvitationException;
 import org.securehub.userservice.exception.UserAlreadyExistsException;
 import org.securehub.userservice.exception.UserNotFoundException;
 import org.securehub.userservice.model.AuthenticatedUser;
+import org.securehub.userservice.producer.UserEventProducer;
+import org.securehub.userservice.repository.UserInvitationRepository;
 import org.securehub.userservice.repository.UserRepository;
 import org.securehub.userservice.specification.UserSpecification;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,29 +36,127 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserInvitationRepository userInvitationRepository;
+    private final KeycloakAdminService keycloakAdminService;
+    private final UserEventProducer userEventProducer;
+    private final TokenService tokenService;
 
-    public UserResponse createUser(CreateUserRequest request){
+    @Transactional
+    public UserResponse createUser(CreateUserRequest request) {
 
         boolean exists = userRepository.existsByEmail(request.email());
 
-        if(exists){
-            throw new UserAlreadyExistsException("User already exists with email" );
+        if (exists) {
+            throw new UserAlreadyExistsException("User already exists with email");
         }
+
+        String invitationToken = tokenService.generateInvitationToken();
+
+        String keycloakUserId = keycloakAdminService.createUser(
+                request.email(),
+                request.firstName(),
+                request.lastName(),
+                request.role()
+        );
 
         User user = new User();
 
-//        user.setKeycloakUserId(request.keycloakUserId());
+        user.setKeycloakUserId(keycloakUserId);
         user.setEmail(request.email());
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
-        user.setIsActive(request.isActive());
+        user.setIsActive(false);
 
-        User saved = userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        return UserResponse.fromEntity(saved);
+        UserInvitation invitation = UserInvitation.builder()
+                .token(invitationToken)
+                .user(savedUser)
+                .expiresAt(LocalDateTime.now().plusDays(7))
+                .used(false)
+                .build();
+
+        userInvitationRepository.save(invitation);
+
+        userEventProducer.publishUserCreated(
+                new UserCreatedEvent(
+                        savedUser.getId(),
+                        savedUser.getEmail(),
+                        savedUser.getFirstName(),
+                        savedUser.getLastName(),
+                        invitationToken
+                )
+        );
+
+        return UserResponse.fromEntity(savedUser);
     }
 
-    public UserResponse updateUser(UUID userId, UpdateUserRequest request){
+    @Transactional
+    public void acceptInvitation(AcceptInvitationRequest request) {
+        UserInvitation invitation =
+                userInvitationRepository.findByToken(request.token())
+                        .orElseThrow(() ->
+                                new InvalidInvitationException(
+                                        "Invitation token is invalid"
+                                ));
+
+        if (invitation.getUsed() == true) {
+            throw new InvalidInvitationException("Invitation has already been used");
+        }
+
+        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new InvalidInvitationException("Invitation has expired");
+        }
+
+        User user =
+                userRepository.findByEmail(invitation.getUser().getEmail())
+                        .orElseThrow(() ->
+                                new UserNotFoundException(
+                                        "User not found"
+                                ));
+
+        keycloakAdminService.setPassword(user.getKeycloakUserId(), request.password());
+        keycloakAdminService.markEmailAsVerified(user.getKeycloakUserId());
+
+        user.setIsActive(true);
+        invitation.setUsed(true);
+
+        userRepository.save(user);
+        userInvitationRepository.save(invitation);
+    }
+
+    public InvitationValidationResponse validateInvitation(String token) {
+        UserInvitation invitation =
+                userInvitationRepository.findByToken(token)
+                        .orElseThrow(() ->
+                                new InvalidInvitationException(
+                                        "Invitation token is invalid"
+                                ));
+
+        if (invitation.getUsed() == true) {
+            throw new InvalidInvitationException(
+                    "Invitation has already been used"
+            );
+        }
+
+        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new InvalidInvitationException(
+                    "Invitation has expired"
+            );
+        }
+
+        User user = invitation.getUser();
+
+        return new InvitationValidationResponse(
+                true,
+                user.getLastName(),
+                user.getLastName(),
+                user.getEmail()
+        );
+
+    }
+
+    public UserResponse updateUser(UUID userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 

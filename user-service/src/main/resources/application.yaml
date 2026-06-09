@@ -12,13 +12,17 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
 
     show-sql: true
 
     properties:
       hibernate:
         format_sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
 
   security:
     oauth2:
@@ -36,3 +40,11 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+
+keycloak:
+  admin:
+    server-url: http://localhost:8081
+    realm: securehub
+    client-id: admin-cli
+    username: admin
+    password: admin

@@ -7,6 +7,6 @@ public record UserCreatedEvent(
         String email,
         String firstName,
         String lastName,
-        String invitationToken
+        String token
 ) {
 }
