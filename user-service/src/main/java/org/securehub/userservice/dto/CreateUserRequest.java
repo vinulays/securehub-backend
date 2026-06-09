@@ -3,6 +3,7 @@ package org.securehub.userservice.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.securehub.userservice.enums.UserRole;
 
 public record CreateUserRequest(
 
@@ -16,7 +17,7 @@ public record CreateUserRequest(
         @NotBlank(message = "Last name is required")
         String lastName,
 
-        @NotNull(message = "Active status is required")
-        Boolean isActive
+        @NotNull(message = "Role is required")
+        UserRole role
 ) {
 }

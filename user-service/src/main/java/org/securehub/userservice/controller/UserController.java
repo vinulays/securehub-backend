@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.securehub.userservice.dto.*;
 import org.securehub.userservice.model.AuthenticatedUser;
-import org.securehub.userservice.producer.UserEventProducer;
 import org.securehub.userservice.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -19,23 +18,6 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-    private final UserEventProducer producer;
-
-    @PostMapping("/event")
-    public String publishEvent() {
-
-        producer.publishUserCreated(
-                new UserCreatedEvent(
-                        UUID.randomUUID(),
-                        "test@gmail.com",
-                        "Vinula",
-                        "Senarathne",
-                        "token123"
-                )
-        );
-
-        return "Event published";
-    }
 
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")

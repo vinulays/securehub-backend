@@ -1,28 +1,30 @@
 package org.securehub.userservice.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "user_invitations")
-public class UserInvitation {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UserInvitation extends BaseEntity {
 
-    @Id
-    @GeneratedValue
-    private UUID id;
-
+    @Column(nullable = false, unique = true)
     private String token;
 
-    private UUID userId;
+    @Column(nullable = false)
+    private String email;
 
+    @Column(nullable = false)
     private LocalDateTime expiresAt;
 
-    private LocalDateTime usedAt;
-
-    private boolean used;
+    @Column(nullable = false)
+    private Boolean used;
 }
