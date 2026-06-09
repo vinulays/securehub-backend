@@ -58,20 +58,6 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneric(
-            Exception ex
-    ) {
-        log.error("Unexpected error occurred:", ex);
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(
-                        "Something went wrong",
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        null
-                ));
-    }
-
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleAlreadyExistingUser(
             UserAlreadyExistsException ex

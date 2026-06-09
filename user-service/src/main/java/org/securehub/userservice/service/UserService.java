@@ -50,8 +50,6 @@ public class UserService {
             throw new UserAlreadyExistsException("User already exists with email");
         }
 
-        String invitationToken = tokenService.generateInvitationToken();
-
         String keycloakUserId = keycloakAdminService.createUser(
                 request.email(),
                 request.firstName(),
@@ -69,24 +67,7 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        UserInvitation invitation = UserInvitation.builder()
-                .token(invitationToken)
-                .user(savedUser)
-                .expiresAt(LocalDateTime.now().plusDays(7))
-                .used(false)
-                .build();
-
-        userInvitationRepository.save(invitation);
-
-        userEventProducer.publishUserCreated(
-                new UserCreatedEvent(
-                        savedUser.getId(),
-                        savedUser.getEmail(),
-                        savedUser.getFirstName(),
-                        savedUser.getLastName(),
-                        invitationToken
-                )
-        );
+        this.createAndSendInvitation(savedUser);
 
         return UserResponse.fromEntity(savedUser);
     }
@@ -156,6 +137,50 @@ public class UserService {
 
     }
 
+    @Transactional
+    public void resendInvitation(UUID userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User not found"
+                        ));
+
+        if (user.getIsActive() == true) {
+            throw new InvalidInvitationException("User has already accepted the invitation");
+        }
+
+        userInvitationRepository.invalidateUserInvitations(userId);
+
+        this.createAndSendInvitation(user);
+    }
+
+    private void createAndSendInvitation(User user) {
+
+        String token = tokenService.generateInvitationToken();
+
+        UserInvitation invitation =
+                UserInvitation.builder()
+                        .token(token)
+                        .user(user)
+                        .expiresAt(LocalDateTime.now().plusDays(7))
+                        .used(false)
+                        .build();
+
+        userInvitationRepository.save(invitation);
+
+        userEventProducer.publishUserCreated(
+                new UserCreatedEvent(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        token
+                )
+        );
+    }
+
+    @Transactional
     public UserResponse updateUser(UUID userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));

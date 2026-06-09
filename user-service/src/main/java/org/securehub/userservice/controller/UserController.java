@@ -37,7 +37,15 @@ public class UserController {
     public ResponseEntity<Void> acceptInvitation(@Valid @RequestBody AcceptInvitationRequest request) {
         userService.acceptInvitation(request);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/resend-invitation")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> resendInvitation(@PathVariable UUID id) {
+        userService.resendInvitation(id);
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/invitations/{token}")
