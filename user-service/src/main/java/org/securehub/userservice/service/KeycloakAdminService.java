@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.securehub.userservice.enums.UserRole;
@@ -70,5 +71,33 @@ public class KeycloakAdminService {
                 .roles()
                 .realmLevel()
                 .add(List.of(role));
+    }
+
+    public void setPassword(String keycloakUserId, String password) {
+
+        CredentialRepresentation credential = new CredentialRepresentation();
+
+        credential.setType(CredentialRepresentation.PASSWORD);
+
+        credential.setValue(password);
+
+        credential.setTemporary(false);
+
+        keycloak.realm(realmName)
+                .users()
+                .get(keycloakUserId)
+                .resetPassword(credential);
+    }
+
+    public void markEmailAsVerified(String keycloakUserId) {
+
+        UserRepresentation user = new UserRepresentation();
+
+        user.setEmailVerified(true);
+
+        keycloak.realm(realmName)
+                .users()
+                .get(keycloakUserId)
+                .update(user);
     }
 }

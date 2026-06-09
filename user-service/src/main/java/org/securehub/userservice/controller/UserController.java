@@ -22,6 +22,7 @@ public class UserController {
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
+
         return userService.createUser(request);
     }
 
@@ -30,6 +31,19 @@ public class UserController {
     public ResponseEntity<Page<UserResponse>> getUsers(@Valid @RequestBody UserSearchRequest request) {
 
         return ResponseEntity.ok(userService.searchUsers(request));
+    }
+
+    @PostMapping("/invitations/accept")
+    public ResponseEntity<Void> acceptInvitation(@Valid @RequestBody AcceptInvitationRequest request) {
+        userService.acceptInvitation(request);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/invitations/{token}")
+    public ResponseEntity<InvitationValidationResponse> validateInvitation(@PathVariable String token) {
+
+        return ResponseEntity.ok(userService.validateInvitation(token));
     }
 
     @GetMapping("/me")
@@ -41,6 +55,7 @@ public class UserController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request) {
+
         return userService.updateUser(id, request);
     }
 }

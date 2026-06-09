@@ -6,6 +6,7 @@ import org.securehub.userservice.dto.*;
 import org.securehub.userservice.entity.User;
 import org.securehub.userservice.entity.UserInvitation;
 import org.securehub.userservice.enums.RolePermissionMapping;
+import org.securehub.userservice.exception.InvalidInvitationException;
 import org.securehub.userservice.exception.UserAlreadyExistsException;
 import org.securehub.userservice.exception.UserNotFoundException;
 import org.securehub.userservice.model.AuthenticatedUser;
@@ -38,6 +39,7 @@ public class UserService {
     private final UserInvitationRepository userInvitationRepository;
     private final KeycloakAdminService keycloakAdminService;
     private final UserEventProducer userEventProducer;
+    private final TokenService tokenService;
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
@@ -48,7 +50,7 @@ public class UserService {
             throw new UserAlreadyExistsException("User already exists with email");
         }
 
-        String invitationToken = UUID.randomUUID().toString();
+        String invitationToken = tokenService.generateInvitationToken();
 
         String keycloakUserId = keycloakAdminService.createUser(
                 request.email(),
@@ -69,7 +71,7 @@ public class UserService {
 
         UserInvitation invitation = UserInvitation.builder()
                 .token(invitationToken)
-                .email(savedUser.getEmail())
+                .user(savedUser)
                 .expiresAt(LocalDateTime.now().plusDays(7))
                 .used(false)
                 .build();
@@ -87,6 +89,71 @@ public class UserService {
         );
 
         return UserResponse.fromEntity(savedUser);
+    }
+
+    @Transactional
+    public void acceptInvitation(AcceptInvitationRequest request) {
+        UserInvitation invitation =
+                userInvitationRepository.findByToken(request.token())
+                        .orElseThrow(() ->
+                                new InvalidInvitationException(
+                                        "Invitation token is invalid"
+                                ));
+
+        if (invitation.getUsed() == true) {
+            throw new InvalidInvitationException("Invitation has already been used");
+        }
+
+        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new InvalidInvitationException("Invitation has expired");
+        }
+
+        User user =
+                userRepository.findByEmail(invitation.getUser().getEmail())
+                        .orElseThrow(() ->
+                                new UserNotFoundException(
+                                        "User not found"
+                                ));
+
+        keycloakAdminService.setPassword(user.getKeycloakUserId(), request.password());
+        keycloakAdminService.markEmailAsVerified(user.getKeycloakUserId());
+
+        user.setIsActive(true);
+        invitation.setUsed(true);
+
+        userRepository.save(user);
+        userInvitationRepository.save(invitation);
+    }
+
+    public InvitationValidationResponse validateInvitation(String token) {
+        UserInvitation invitation =
+                userInvitationRepository.findByToken(token)
+                        .orElseThrow(() ->
+                                new InvalidInvitationException(
+                                        "Invitation token is invalid"
+                                ));
+
+        if (invitation.getUsed() == true) {
+            throw new InvalidInvitationException(
+                    "Invitation has already been used"
+            );
+        }
+
+        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new InvalidInvitationException(
+                    "Invitation has expired"
+            );
+        }
+
+        User user = invitation.getUser();
+
+        return new InvitationValidationResponse(
+                true,
+                user.getLastName(),
+                user.getLastName(),
+                user.getEmail()
+        );
+
     }
 
     public UserResponse updateUser(UUID userId, UpdateUserRequest request) {
