@@ -52,10 +52,31 @@ public class UserController {
         return userService.getCurrentUser();
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> getUserDetails(@PathVariable UUID id) {
+
+        return ResponseEntity.ok(userService.getUserDetails(id));
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request) {
 
         return userService.updateUser(id, request);
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse deactivateUser(@PathVariable UUID id) {
+
+        return userService.updateUserStatus(id, false);
+    }
+
+    @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse activateUser(@PathVariable UUID id) {
+
+        return userService.updateUserStatus(id, true);
     }
 }

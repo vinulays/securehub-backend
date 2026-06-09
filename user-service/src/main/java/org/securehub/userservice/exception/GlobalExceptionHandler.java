@@ -58,9 +58,9 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    @ExceptionHandler(RuntimeException.class)
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(
-            RuntimeException ex
+            Exception ex
     ) {
         log.error("Unexpected error occurred:", ex);
 

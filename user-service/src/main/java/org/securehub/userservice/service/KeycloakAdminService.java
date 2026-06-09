@@ -100,4 +100,29 @@ public class KeycloakAdminService {
                 .get(keycloakUserId)
                 .update(user);
     }
+
+    public void disableUser(String keycloakUserId) {
+
+        UserRepresentation user = new UserRepresentation();
+
+        user.setEnabled(false);
+
+        keycloak.realm(realmName)
+                .users()
+                .get(keycloakUserId)
+                .update(user);
+    }
+
+    public void updateUserStatus(String keycloakUserId, boolean enable) {
+
+        UserRepresentation user = new UserRepresentation();
+
+        user.setEnabled(enable);
+
+        keycloak.realm(realmName)
+                .users()
+                .get(keycloakUserId)
+                .update(user);
+    }
+
 }
