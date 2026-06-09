@@ -44,7 +44,7 @@ public class UserService {
 
         User user = new User();
 
-        user.setKeycloakUserId(request.keycloakUserId());
+//        user.setKeycloakUserId(request.keycloakUserId());
         user.setEmail(request.email());
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
