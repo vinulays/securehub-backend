@@ -42,6 +42,43 @@ services:
     ports:
       - "8081:8080"
 
+  mailhog:
+    image: mailhog/mailhog
+    container_name: securehub-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: securehub-kafka
+
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+
+    environment:
+      KAFKA_KRAFT_MODE: "true"  # Enables KRaft mode in Kafka.
+      KAFKA_PROCESS_ROLES: controller,broker  # Kafka acts as both broker and controller.
+      KAFKA_NODE_ID: 1  # A unique ID for this Kafka instance.
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@localhost:9093"  # Defines who can vote in the controller quorum; part of KRaft. Format nodeId@host:controllerPort
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093 # PLAINTEXT is for client communication. CONTROLLER is for internal controller communication
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092 # Producers and Consumers will connect to this address
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 168  # Keep logs for 7 days.
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0  # No delay for consumer rebalancing.
+
+      CLUSTER_ID: "J_5BbHaKSY-w1lYbb4KSVQ"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - kafka_data:/var/lib/kafka/data
+
 volumes:
   postgres_data:
   keycloak_postgres_data:
+  kafka_data:

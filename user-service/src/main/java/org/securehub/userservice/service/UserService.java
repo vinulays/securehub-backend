@@ -1,10 +1,14 @@
 package org.securehub.userservice.service;
 
 import lombok.RequiredArgsConstructor;
+import org.securehub.userservice.dto.CreateUserRequest;
+import org.securehub.userservice.dto.UpdateUserRequest;
 import org.securehub.userservice.dto.UserResponse;
 import org.securehub.userservice.dto.UserSearchRequest;
 import org.securehub.userservice.entity.User;
 import org.securehub.userservice.enums.RolePermissionMapping;
+import org.securehub.userservice.exception.UserAlreadyExistsException;
+import org.securehub.userservice.exception.UserNotFoundException;
 import org.securehub.userservice.model.AuthenticatedUser;
 import org.securehub.userservice.repository.UserRepository;
 import org.securehub.userservice.specification.UserSpecification;
@@ -21,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,17 +34,63 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    public UserResponse createUser(CreateUserRequest request){
+
+        boolean exists = userRepository.existsByEmail(request.email());
+
+        if(exists){
+            throw new UserAlreadyExistsException("User already exists with email" );
+        }
+
+        User user = new User();
+
+//        user.setKeycloakUserId(request.keycloakUserId());
+        user.setEmail(request.email());
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setIsActive(request.isActive());
+
+        User saved = userRepository.save(user);
+
+        return UserResponse.fromEntity(saved);
+    }
+
+    public UserResponse updateUser(UUID userId, UpdateUserRequest request){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (request.email() != null) {
+            user.setEmail(request.email());
+        }
+
+        if (request.firstName() != null) {
+            user.setFirstName(request.firstName());
+        }
+
+        if (request.lastName() != null) {
+            user.setLastName(request.lastName());
+        }
+
+        if (request.isActive() != null) {
+            user.setIsActive(request.isActive());
+        }
+
+        User saved = userRepository.save(user);
+
+        return UserResponse.fromEntity(saved);
+    }
+
     public Page<UserResponse> searchUsers(UserSearchRequest request) {
         Specification<User> specification = UserSpecification.search(request);
 
-        String sortBy = ALLOWED_SORT_FIELDS.contains(request.getSortBy()) ? request.getSortBy() : "createdAt";
+        String sortBy = ALLOWED_SORT_FIELDS.contains(request.sortBy()) ? request.sortBy() : "createdAt";
 
         Sort sort = Sort.by(
-                Sort.Direction.fromString(request.getSortDirection().toString()),
+                Sort.Direction.fromString(request.sortDirection().toString()),
                 sortBy
         );
 
-        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
+        Pageable pageable = PageRequest.of(request.page(), request.size(), sort);
 
         return userRepository
                 .findAll(specification, pageable)
