@@ -1,7 +1,7 @@
-package org.securehub.organizationservice.config;
+package org.securehub.security.config;
 
-import lombok.RequiredArgsConstructor;
-import org.securehub.organizationservice.handler.CustomAccessDeniedHandler;
+import org.securehub.security.converter.KeycloakJwtRolesConverter;
+import org.securehub.security.handler.CustomAccessDeniedHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -12,13 +12,16 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableMethodSecurity
-@RequiredArgsConstructor
-public class SecurityConfig {
-
-    private final CustomAccessDeniedHandler accessDeniedHandler;
+public class SecurityAutoConfiguration {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+    public CustomAccessDeniedHandler accessDeniedHandler() {
+        return new CustomAccessDeniedHandler();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   CustomAccessDeniedHandler handler) throws Exception {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -26,9 +29,11 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler))
+                .exceptionHandling(ex -> ex.accessDeniedHandler(handler))
                 .oauth2ResourceServer(oauth2 ->
-                        oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        oauth2.jwt(jwt ->
+                                jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
+                        )
                 );
 
         return http.build();
