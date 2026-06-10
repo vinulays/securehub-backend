@@ -6,14 +6,15 @@ import org.securehub.userservice.dto.*;
 import org.securehub.userservice.entity.User;
 import org.securehub.userservice.entity.UserInvitation;
 import org.securehub.userservice.enums.RolePermissionMapping;
+import org.securehub.userservice.event.UserCreatedDomainEvent;
 import org.securehub.userservice.exception.InvalidInvitationException;
 import org.securehub.userservice.exception.UserAlreadyExistsException;
 import org.securehub.userservice.exception.UserNotFoundException;
 import org.securehub.userservice.model.AuthenticatedUser;
-import org.securehub.userservice.producer.UserEventProducer;
 import org.securehub.userservice.repository.UserInvitationRepository;
 import org.securehub.userservice.repository.UserRepository;
 import org.securehub.userservice.specification.UserSpecification;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,8 +39,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserInvitationRepository userInvitationRepository;
     private final KeycloakAdminService keycloakAdminService;
-    private final UserEventProducer userEventProducer;
-    private final TokenService tokenService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
@@ -67,7 +67,10 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        this.createAndSendInvitation(savedUser);
+        applicationEventPublisher.publishEvent(
+                new UserCreatedDomainEvent(
+                        savedUser.getId()
+                ));
 
         return UserResponse.fromEntity(savedUser);
     }
@@ -152,32 +155,10 @@ public class UserService {
 
         userInvitationRepository.invalidateUserInvitations(userId);
 
-        this.createAndSendInvitation(user);
-    }
-
-    private void createAndSendInvitation(User user) {
-
-        String token = tokenService.generateInvitationToken();
-
-        UserInvitation invitation =
-                UserInvitation.builder()
-                        .token(token)
-                        .user(user)
-                        .expiresAt(LocalDateTime.now().plusDays(7))
-                        .used(false)
-                        .build();
-
-        userInvitationRepository.save(invitation);
-
-        userEventProducer.publishUserCreated(
-                new UserCreatedEvent(
-                        user.getId(),
-                        user.getEmail(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        token
-                )
-        );
+        applicationEventPublisher.publishEvent(
+                new UserCreatedDomainEvent(
+                        user.getId()
+                ));
     }
 
     @Transactional

@@ -1,8 +1,8 @@
-package org.securehub.userservice.dto;
+package org.securehub.userservice.dto.event;
 
 import java.util.UUID;
 
-public record UserCreatedEvent(
+public record UserInvitationCreatedEvent(
         UUID userId,
         String email,
         String firstName,
