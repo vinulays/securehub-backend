@@ -1,0 +1,11 @@
+package org.securehub.organizationservice.repository;
+
+import org.securehub.organizationservice.entity.Organization;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import java.util.UUID;
+
+public interface OrganizationRepository extends JpaRepository<Organization, UUID>,
+        JpaSpecificationExecutor<Organization> {
+}
