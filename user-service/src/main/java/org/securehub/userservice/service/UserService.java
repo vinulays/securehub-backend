@@ -10,7 +10,6 @@ import org.securehub.userservice.event.UserCreatedDomainEvent;
 import org.securehub.userservice.exception.InvalidInvitationException;
 import org.securehub.userservice.exception.UserAlreadyExistsException;
 import org.securehub.userservice.exception.UserNotFoundException;
-import org.securehub.userservice.dto.AuthenticatedUserResponse;
 import org.securehub.userservice.repository.UserInvitationRepository;
 import org.securehub.userservice.repository.UserRepository;
 import org.securehub.userservice.specification.UserSpecification;
@@ -193,7 +192,7 @@ public class UserService {
         String sortBy = ALLOWED_SORT_FIELDS.contains(request.sortBy()) ? request.sortBy() : "createdAt";
 
         Sort sort = Sort.by(
-                Sort.Direction.fromString(request.sortDirection().toString()),
+                request.sortDirection(),
                 sortBy
         );
 

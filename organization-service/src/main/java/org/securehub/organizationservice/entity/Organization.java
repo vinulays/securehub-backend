@@ -19,4 +19,7 @@ public class Organization extends BaseEntity {
     private String slug;
 
     private String description;
+
+    @Column(nullable = false)
+    private Boolean isActive = true;
 }

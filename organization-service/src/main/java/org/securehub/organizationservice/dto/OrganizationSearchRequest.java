@@ -1,21 +1,13 @@
-package org.securehub.userservice.dto;
+package org.securehub.organizationservice.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
-import org.hibernate.validator.constraints.UUID;
-import org.securehub.userservice.enums.SortDirection;
 import org.springframework.data.domain.Sort;
 
-import java.util.List;
-
-public record UserSearchRequest(
+public record OrganizationSearchRequest(
         String keyword,
 
         Boolean isActive,
-
-        @Size(max = 20, message = "A maximum of 20 organization IDs can be provided")
-        List<@UUID(message = "Each organization ID must be a valid UUID") String> organizationIds,
 
         @Min(value = 0, message = "Page number cannot be negative")
         Integer page,
@@ -27,13 +19,12 @@ public record UserSearchRequest(
         String sortBy,
 
         Sort.Direction sortDirection
-) {
+        ) {
 
-    public UserSearchRequest {
+    public OrganizationSearchRequest {
         page = page == null ? 0 : page;
         size = size == null ? 10 : size;
         sortBy = sortBy == null || sortBy.isBlank() ? "createdAt" : sortBy;
         sortDirection = sortDirection == null ? Sort.Direction.DESC : sortDirection;
     }
-
 }

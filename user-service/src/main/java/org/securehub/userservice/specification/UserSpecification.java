@@ -17,11 +17,11 @@ public class UserSpecification {
             List<Predicate> predicates = new ArrayList<>();
 
             if (request.keyword() != null && !request.keyword().isBlank()) {
-                String like = "%" + request.keyword().toLowerCase() + "%";
+                String pattern = "%" + request.keyword().trim().toLowerCase() + "%";
 
-                Predicate firstName = cb.like(cb.lower(root.get("firstName")), like);
-                Predicate lastName = cb.like(cb.lower(root.get("lastName")), like);
-                Predicate email = cb.like(cb.lower(root.get("email")), like);
+                Predicate firstName = cb.like(cb.lower(root.get("firstName")), pattern);
+                Predicate lastName = cb.like(cb.lower(root.get("lastName")), pattern);
+                Predicate email = cb.like(cb.lower(root.get("email")), pattern);
 
                 predicates.add(cb.or(firstName, lastName, email));
             }
