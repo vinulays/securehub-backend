@@ -31,4 +31,14 @@ public class FallbackController {
                         "status", "fallback-response"
                 ));
     }
+
+    @GetMapping("/organization")
+    public ResponseEntity<?> organizationFallback() {
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of(
+                        "message", "Organization service is currently unavailable",
+                        "status", "fallback-response"
+                ));
+    }
 }

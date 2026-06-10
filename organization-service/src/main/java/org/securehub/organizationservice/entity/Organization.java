@@ -1,10 +1,7 @@
-package org.securehub.userservice.entity;
+package org.securehub.organizationservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "organizations")
@@ -22,7 +19,4 @@ public class Organization extends BaseEntity {
     private String slug;
 
     private String description;
-
-    @OneToMany(mappedBy = "organization", fetch = FetchType.LAZY)
-    private List<OrganizationMembership> memberships = new ArrayList<>();
 }

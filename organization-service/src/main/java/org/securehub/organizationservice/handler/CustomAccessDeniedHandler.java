@@ -1,4 +1,4 @@
-package org.securehub.userservice.handler;
+package org.securehub.organizationservice.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
