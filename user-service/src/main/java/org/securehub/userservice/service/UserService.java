@@ -10,7 +10,7 @@ import org.securehub.userservice.event.UserCreatedDomainEvent;
 import org.securehub.userservice.exception.InvalidInvitationException;
 import org.securehub.userservice.exception.UserAlreadyExistsException;
 import org.securehub.userservice.exception.UserNotFoundException;
-import org.securehub.userservice.model.AuthenticatedUser;
+import org.securehub.userservice.dto.AuthenticatedUserResponse;
 import org.securehub.userservice.repository.UserInvitationRepository;
 import org.securehub.userservice.repository.UserRepository;
 import org.securehub.userservice.specification.UserSpecification;
@@ -230,7 +230,7 @@ public class UserService {
         );
     }
 
-    public AuthenticatedUser getCurrentUser() {
+    public AuthenticatedUserResponse getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Jwt jwt = (Jwt) authentication.getPrincipal();
@@ -255,7 +255,7 @@ public class UserService {
 
         User user = this.getOrCreateUser(keycloakUserId, email, firstName, lastName);
 
-        return new AuthenticatedUser(
+        return new AuthenticatedUserResponse(
                 user.getId(),
                 keycloakUserId,
                 email,

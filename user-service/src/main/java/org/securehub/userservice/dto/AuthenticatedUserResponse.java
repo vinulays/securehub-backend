@@ -1,9 +1,9 @@
-package org.securehub.userservice.model;
+package org.securehub.userservice.dto;
 
 import java.util.Set;
 import java.util.UUID;
 
-public record AuthenticatedUser(
+public record AuthenticatedUserResponse(
         UUID userId,
         String keycloakUserId,
         String email,

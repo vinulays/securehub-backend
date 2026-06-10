@@ -3,7 +3,7 @@ package org.securehub.userservice.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.securehub.userservice.dto.*;
-import org.securehub.userservice.model.AuthenticatedUser;
+import org.securehub.userservice.dto.AuthenticatedUserResponse;
 import org.securehub.userservice.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -55,7 +55,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public AuthenticatedUser getCurrentUser() {
+    public AuthenticatedUserResponse getCurrentUser() {
 
         return userService.getCurrentUser();
     }
