@@ -3,9 +3,6 @@ package org.securehub.userservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "users")
 @Getter
@@ -29,7 +26,4 @@ public class User extends BaseEntity {
 
     @Column(columnDefinition = "boolean default true")
     private Boolean isActive;
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<OrganizationMembership> memberships = new ArrayList<>();
 }

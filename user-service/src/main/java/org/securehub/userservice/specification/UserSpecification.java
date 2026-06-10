@@ -4,7 +4,6 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.securehub.userservice.dto.UserSearchRequest;
-import org.securehub.userservice.entity.OrganizationMembership;
 import org.securehub.userservice.entity.User;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -31,13 +30,13 @@ public class UserSpecification {
                 predicates.add(cb.equal(root.get("isActive"), request.isActive()));
             }
 
-            if (request.organizationIds() != null && !request.organizationIds().isEmpty()) {
-                Join<User, OrganizationMembership> memberships = root.join("memberships", JoinType.LEFT);
-
-                predicates.add(memberships.get("organization").get("id").in(request.organizationIds()));
-
-                query.distinct(true);
-            }
+//            if (request.organizationIds() != null && !request.organizationIds().isEmpty()) {
+//                Join<User, OrganizationMembership> memberships = root.join("memberships", JoinType.LEFT);
+//
+//                predicates.add(memberships.get("organization").get("id").in(request.organizationIds()));
+//
+//                query.distinct(true);
+//            }
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };

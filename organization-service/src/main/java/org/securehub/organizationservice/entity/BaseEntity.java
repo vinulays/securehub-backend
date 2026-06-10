@@ -1,4 +1,4 @@
-package org.securehub.userservice.entity;
+package org.securehub.organizationservice.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

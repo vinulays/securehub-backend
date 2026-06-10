@@ -1,8 +1,10 @@
-package org.securehub.userservice.entity;
+package org.securehub.organizationservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.securehub.userservice.enums.OrganizationRole;
+import org.securehub.organizationservice.enums.OrganizationRole;
+
+import java.util.UUID;
 
 @Entity
 @Table(
@@ -24,9 +26,8 @@ public class OrganizationMembership extends BaseEntity {
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

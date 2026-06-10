@@ -35,6 +35,17 @@ spring:
                     name: userServiceCB
                     fallbackUri: forward:/fallback/user
 
+            - id: organization-service
+              uri: lb://ORGANIZATION-SERVICE
+              predicates:
+                - Path=/api/organizations/**
+              filters:
+                - JwtCookie
+                - name: CircuitBreaker
+                  args:
+                    name: organizationServiceCB
+                    fallbackUri: forward:/fallback/organization
+
 
         default-filters:
           - PreserveHostHeader
@@ -62,12 +73,21 @@ resilience4j:
         waitDurationInOpenState: 10s
         permittedNumberOfCallsInHalfOpenState: 3
 
+      organizationServiceCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+
   timelimiter:
     instances:
       authServiceCB:
         timeoutDuration: 10s
 
       userServiceCB:
+        timeoutDuration: 10s
+
+      organizationServiceCB:
         timeoutDuration: 10s
 
 logging:
