@@ -2,10 +2,7 @@ package org.securehub.organizationservice.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.securehub.organizationservice.dto.CreateOrganizationRequest;
-import org.securehub.organizationservice.dto.OrganizationResponse;
-import org.securehub.organizationservice.dto.OrganizationSearchRequest;
-import org.securehub.organizationservice.dto.UpdateOrganizationRequest;
+import org.securehub.organizationservice.dto.*;
 import org.securehub.organizationservice.service.OrganizationService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -23,14 +20,14 @@ public class OrganizationController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<OrganizationResponse> createOrganization(
+    public ResponseEntity<OrganizationSummaryResponse> createOrganization(
             @Valid @RequestBody CreateOrganizationRequest request
     ) {
         return ResponseEntity.ok(organizationService.createOrganization(request));
     }
 
     @PostMapping("/search")
-    public ResponseEntity<Page<OrganizationResponse>> searchOrganizations(
+    public ResponseEntity<Page<OrganizationSummaryResponse>> searchOrganizations(
             @Valid @RequestBody OrganizationSearchRequest request
     ) {
 
@@ -40,13 +37,13 @@ public class OrganizationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrganizationResponse> getOrganizationDetails(@PathVariable UUID id) {
+    public ResponseEntity<OrganizationDetailsResponse> getOrganizationDetails(@PathVariable UUID id) {
         return ResponseEntity.ok(organizationService.getOrganizationDetails(id));
     }
 
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<OrganizationResponse> updateOrganization(
+    public ResponseEntity<OrganizationSummaryResponse> updateOrganization(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateOrganizationRequest request
     ) {

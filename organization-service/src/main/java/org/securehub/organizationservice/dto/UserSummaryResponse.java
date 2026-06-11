@@ -2,11 +2,17 @@ package org.securehub.organizationservice.dto;
 
 import java.util.UUID;
 
-public record OrganizationResponse(
+public record UserSummaryResponse(
+
         UUID id,
-        String name,
-        String slug,
-        String description,
+
+        String email,
+
+        String firstName,
+
+        String lastName,
+
         Boolean isActive
+
 ) {
 }
