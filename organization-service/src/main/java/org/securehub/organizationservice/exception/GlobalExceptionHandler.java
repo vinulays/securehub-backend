@@ -70,4 +70,43 @@ public class GlobalExceptionHandler {
                         null
                 ));
     }
+
+    @ExceptionHandler(MembershipNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleMembershipNotFound(
+            MembershipNotFoundException ex
+    ) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.NOT_FOUND.value(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(MembershipAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleMembershipAlreadyExists(
+            MembershipAlreadyExistsException ex
+    ) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(
+            UserNotFoundException ex
+    ) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.NOT_FOUND.value(),
+                        null
+                ));
+    }
 }

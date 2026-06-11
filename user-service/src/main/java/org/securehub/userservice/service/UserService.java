@@ -210,6 +210,20 @@ public class UserService {
         return UserResponse.fromEntity(user);
     }
 
+    public UserSummaryResponse getUserSummary(UUID userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        return new UserSummaryResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getIsActive()
+        );
+    }
+
     @Transactional
     public UserResponse updateUserStatus(
             UUID userId,
