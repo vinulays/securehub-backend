@@ -1,12 +1,11 @@
 package org.securehub.organizationservice.service;
 
 import lombok.RequiredArgsConstructor;
-import org.securehub.organizationservice.dto.CreateOrganizationRequest;
-import org.securehub.organizationservice.dto.OrganizationResponse;
-import org.securehub.organizationservice.dto.OrganizationSearchRequest;
-import org.securehub.organizationservice.dto.UpdateOrganizationRequest;
+import org.securehub.organizationservice.dto.*;
 import org.securehub.organizationservice.entity.Organization;
+import org.securehub.organizationservice.entity.OrganizationMembership;
 import org.securehub.organizationservice.exception.OrganizationNotFoundException;
+import org.securehub.organizationservice.repository.MembershipRepository;
 import org.securehub.organizationservice.repository.OrganizationRepository;
 import org.securehub.organizationservice.specification.OrganizationSpecification;
 import org.springframework.data.domain.Page;
@@ -16,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,8 +24,10 @@ import java.util.UUID;
 public class OrganizationService {
 
     private final OrganizationRepository organizationRepository;
+    private final MembershipRepository membershipRepository;
+    private final UserLookupService userLookupService;
 
-    public OrganizationResponse createOrganization(CreateOrganizationRequest request) {
+    public OrganizationSummaryResponse createOrganization(CreateOrganizationRequest request) {
 
         Organization organization = Organization.builder()
                 .name(request.name())
@@ -34,10 +36,10 @@ public class OrganizationService {
                 .isActive(true)
                 .build();
 
-        return toResponse(organizationRepository.save(organization));
+        return mapToOrganizationSummary(organizationRepository.save(organization));
     }
 
-    public Page<OrganizationResponse> searchOrganizations(OrganizationSearchRequest request) {
+    public Page<OrganizationSummaryResponse> searchOrganizations(OrganizationSearchRequest request) {
         Specification<Organization> specification = OrganizationSpecification.search(request);
 
         String sortBy = ALLOWED_SORT_FIELDS.contains(request.sortBy()) ? request.sortBy() : "createdAt";
@@ -55,10 +57,10 @@ public class OrganizationService {
 
         return organizationRepository
                 .findAll(specification, pageable)
-                .map(this::toResponse);
+                .map(this::mapToOrganizationSummary);
     }
 
-    public OrganizationResponse updateOrganization(UUID id, UpdateOrganizationRequest request) {
+    public OrganizationSummaryResponse updateOrganization(UUID id, UpdateOrganizationRequest request) {
 
         Organization organization = organizationRepository.findById(id)
                 .orElseThrow(() -> new OrganizationNotFoundException("Organization not found"));
@@ -71,15 +73,28 @@ public class OrganizationService {
             organization.setDescription(request.description());
         }
 
-        return toResponse(organizationRepository.save(organization));
+        return mapToOrganizationSummary(organizationRepository.save(organization));
     }
 
-    public OrganizationResponse getOrganizationDetails(UUID organizationId) {
+    public OrganizationDetailsResponse getOrganizationDetails(UUID organizationId) {
         Organization organization = organizationRepository
                 .findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException("Organization not found"));
 
-        return toResponse(organization);
+        List<OrganizationMembership> memberships = membershipRepository.findByOrganizationId(organizationId);
+
+        List<MembershipDetailsResponse> memberResponses = memberships.stream()
+                .map(this::mapToMembershipDetails)
+                .toList();
+
+        return new OrganizationDetailsResponse(
+                organization.getId(),
+                organization.getName(),
+                organization.getSlug(),
+                organization.getDescription(),
+                organization.getIsActive(),
+                memberResponses
+        );
     }
 
     public void updateOrganizationStatus(UUID organizationId, boolean active) {
@@ -92,13 +107,26 @@ public class OrganizationService {
         organizationRepository.save(organization);
     }
 
-    private OrganizationResponse toResponse(Organization org) {
-        return new OrganizationResponse(
+    private OrganizationSummaryResponse mapToOrganizationSummary(Organization org) {
+        return new OrganizationSummaryResponse(
                 org.getId(),
                 org.getName(),
                 org.getSlug(),
                 org.getDescription(),
                 org.getIsActive()
+        );
+    }
+
+    private MembershipDetailsResponse mapToMembershipDetails(OrganizationMembership membership) {
+
+        UserSummaryResponse user = userLookupService.getUser(membership.getUserId());
+
+        return new MembershipDetailsResponse(
+                membership.getId(),
+                membership.getUserId(),
+                membership.getRole(),
+                membership.getIsActive(),
+                user
         );
     }
 
