@@ -2,6 +2,7 @@ package org.securehub.userservice.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.securehub.userservice.dto.*;
 import org.securehub.userservice.entity.User;
 import org.securehub.userservice.entity.UserInvitation;
@@ -13,6 +14,7 @@ import org.securehub.userservice.exception.UserNotFoundException;
 import org.securehub.userservice.repository.UserInvitationRepository;
 import org.securehub.userservice.repository.UserRepository;
 import org.securehub.userservice.specification.UserSpecification;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +33,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -203,6 +206,16 @@ public class UserService {
                 .map(UserResponse::fromEntity);
     }
 
+    public UserBatchResponse getUsersByIds(List<UUID> userIds) {
+
+        List<UserSummaryResponse> users = userRepository.findAllById(userIds)
+                .stream()
+                .map(this::mapToUserSummary)
+                .toList();
+
+        return new UserBatchResponse(users);
+    }
+
     public UserResponse getUserDetails(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -294,6 +307,17 @@ public class UserService {
 
                     return userRepository.save(user);
                 });
+    }
+
+    private UserSummaryResponse mapToUserSummary(User user) {
+
+        return new UserSummaryResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getIsActive()
+        );
     }
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(

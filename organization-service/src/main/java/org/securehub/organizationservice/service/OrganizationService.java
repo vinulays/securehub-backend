@@ -16,6 +16,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -83,9 +84,21 @@ public class OrganizationService {
 
         List<OrganizationMembership> memberships = membershipRepository.findByOrganizationId(organizationId);
 
-        List<MembershipDetailsResponse> memberResponses = memberships.stream()
-                .map(this::mapToMembershipDetails)
+        List<UUID> userIds = memberships.stream()
+                .map(OrganizationMembership::getUserId)
+                .distinct()
                 .toList();
+
+        Map<UUID, UserSummaryResponse> userMap = userLookupService.getUsers(userIds);
+
+        List<MembershipDetailsResponse> memberResponses = memberships.stream()
+                .map(membership -> new MembershipDetailsResponse(
+                        membership.getId(),
+                        membership.getUserId(),
+                        membership.getRole(),
+                        membership.getIsActive(),
+                        userMap.get(membership.getUserId())
+                )).toList();
 
         return new OrganizationDetailsResponse(
                 organization.getId(),
@@ -114,19 +127,6 @@ public class OrganizationService {
                 org.getSlug(),
                 org.getDescription(),
                 org.getIsActive()
-        );
-    }
-
-    private MembershipDetailsResponse mapToMembershipDetails(OrganizationMembership membership) {
-
-        UserSummaryResponse user = userLookupService.getUser(membership.getUserId());
-
-        return new MembershipDetailsResponse(
-                membership.getId(),
-                membership.getUserId(),
-                membership.getRole(),
-                membership.getIsActive(),
-                user
         );
     }
 
