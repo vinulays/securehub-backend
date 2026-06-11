@@ -206,6 +206,17 @@ public class UserService {
                 .map(UserResponse::fromEntity);
     }
 
+    public UserIdsResponse searchUserIds(
+            UserSearchIdsRequest request
+    ) {
+
+        return new UserIdsResponse(
+                userRepository.searchUserIds(
+                        request.keyword()
+                )
+        );
+    }
+
     public UserBatchResponse getUsersByIds(List<UUID> userIds) {
 
         List<UserSummaryResponse> users = userRepository.findAllById(userIds)

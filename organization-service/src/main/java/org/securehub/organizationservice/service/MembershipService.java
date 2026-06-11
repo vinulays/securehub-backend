@@ -1,9 +1,7 @@
 package org.securehub.organizationservice.service;
 
 import lombok.RequiredArgsConstructor;
-import org.securehub.organizationservice.dto.CreateMembershipRequest;
-import org.securehub.organizationservice.dto.MembershipResponse;
-import org.securehub.organizationservice.dto.UserSummaryResponse;
+import org.securehub.organizationservice.dto.*;
 import org.securehub.organizationservice.entity.Organization;
 import org.securehub.organizationservice.entity.OrganizationMembership;
 import org.securehub.organizationservice.exception.MembershipAlreadyExistsException;
@@ -12,8 +10,17 @@ import org.securehub.organizationservice.exception.OrganizationNotFoundException
 import org.securehub.organizationservice.exception.UserNotFoundException;
 import org.securehub.organizationservice.repository.MembershipRepository;
 import org.securehub.organizationservice.repository.OrganizationRepository;
+import org.securehub.organizationservice.specification.MembershipSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -52,6 +59,60 @@ public class MembershipService {
         membership = membershipRepository.save(membership);
 
         return mapToResponse(membership);
+    }
+
+    public Page<MembershipDetailsResponse> getMembers(UUID organizationId, MembershipSearchRequest request) {
+
+        List<UUID> matchingUserIds = null;
+
+        if (StringUtils.hasText(request.keyword())) {
+
+            UserIdsResponse response = userLookupService.searchUserIds(new UserSearchIdsRequest(request.keyword()));
+
+            matchingUserIds = response.userIds();
+        }
+
+
+        Specification<OrganizationMembership> specification =
+                MembershipSpecification.search(organizationId, request, matchingUserIds);
+
+        Pageable pageable = PageRequest.of(request.page(), request.size());
+
+        if (matchingUserIds != null && matchingUserIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        Page<OrganizationMembership> memberships = membershipRepository.findAll(specification, pageable);
+
+        List<UUID> userIds = memberships.getContent()
+                .stream()
+                .map(OrganizationMembership::getUserId)
+                .toList();
+
+        Map<UUID, UserSummaryResponse> users = userLookupService.getUsers(userIds);
+
+        List<MembershipDetailsResponse> content =
+                memberships.getContent()
+                        .stream()
+                        .map(membership -> {
+
+                            UserSummaryResponse user = users.get(membership.getUserId());
+
+                            return new MembershipDetailsResponse(
+                                    membership.getId(),
+                                    membership.getUserId(),
+                                    membership.getRole(),
+                                    membership.getIsActive(),
+                                    user
+                            );
+                        })
+                        .toList();
+
+        return new PageImpl<>(
+                content,
+                pageable,
+                memberships.getTotalElements()
+        );
     }
 
     public void removeMember(UUID organizationId, UUID membershipId) {

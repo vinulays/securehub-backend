@@ -2,9 +2,7 @@ package org.securehub.organizationservice.service;
 
 import lombok.RequiredArgsConstructor;
 import org.securehub.organizationservice.client.UserClient;
-import org.securehub.organizationservice.dto.UserBatchRequest;
-import org.securehub.organizationservice.dto.UserBatchResponse;
-import org.securehub.organizationservice.dto.UserSummaryResponse;
+import org.securehub.organizationservice.dto.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +24,10 @@ public class UserLookupService {
 
         return response.users().stream()
                 .collect(Collectors.toMap(UserSummaryResponse::id, user -> user));
+    }
+
+    public UserIdsResponse searchUserIds(UserSearchIdsRequest request) {
+        return userClient.searchUserIds(request);
     }
 
     public UserSummaryResponse getUser(UUID userId) {

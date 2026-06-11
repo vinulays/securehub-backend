@@ -1,9 +1,7 @@
 package org.securehub.userservice.controller.internal;
 
 import lombok.RequiredArgsConstructor;
-import org.securehub.userservice.dto.UserBatchRequest;
-import org.securehub.userservice.dto.UserBatchResponse;
-import org.securehub.userservice.dto.UserSummaryResponse;
+import org.securehub.userservice.dto.*;
 import org.securehub.userservice.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +19,13 @@ public class InternalUserController {
     public ResponseEntity<UserBatchResponse> getUsersBatch(@RequestBody UserBatchRequest request){
 
         return ResponseEntity.ok(userService.getUsersByIds(request.userIds()));
+    }
+
+    @PostMapping("/search-ids")
+    public UserIdsResponse searchUserIds(
+            @RequestBody UserSearchIdsRequest request
+    ) {
+        return userService.searchUserIds(request);
     }
 
     @GetMapping("/{id}")
