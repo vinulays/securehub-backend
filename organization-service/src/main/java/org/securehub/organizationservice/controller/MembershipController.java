@@ -27,4 +27,15 @@ public class MembershipController {
                 membershipService.addMember(organizationId, request)
         );
     }
+
+    @DeleteMapping("/{membershipId}")
+    public ResponseEntity<Void> removeMember(
+            @PathVariable UUID organizationId,
+            @PathVariable UUID membershipId
+    ) {
+
+        membershipService.removeMember(organizationId, membershipId);
+
+        return ResponseEntity.noContent().build();
+    }
 }

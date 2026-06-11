@@ -17,4 +17,7 @@ public interface MembershipRepository extends
     List<OrganizationMembership> findByOrganizationId(UUID organizationId);
 
     Optional<OrganizationMembership> findByOrganizationIdAndUserId(UUID organizationId, UUID userId);
+
+    Optional<OrganizationMembership> findByIdAndOrganizationId(UUID id, UUID organizationId);
+
 }

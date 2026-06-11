@@ -7,6 +7,7 @@ import org.securehub.organizationservice.dto.UserSummaryResponse;
 import org.securehub.organizationservice.entity.Organization;
 import org.securehub.organizationservice.entity.OrganizationMembership;
 import org.securehub.organizationservice.exception.MembershipAlreadyExistsException;
+import org.securehub.organizationservice.exception.MembershipNotFoundException;
 import org.securehub.organizationservice.exception.OrganizationNotFoundException;
 import org.securehub.organizationservice.exception.UserNotFoundException;
 import org.securehub.organizationservice.repository.MembershipRepository;
@@ -51,6 +52,15 @@ public class MembershipService {
         membership = membershipRepository.save(membership);
 
         return mapToResponse(membership);
+    }
+
+    public void removeMember(UUID organizationId, UUID membershipId) {
+
+        OrganizationMembership membership =
+                membershipRepository.findByIdAndOrganizationId(membershipId, organizationId)
+                        .orElseThrow(() -> new MembershipNotFoundException("Membership not found"));
+
+        membershipRepository.delete(membership);
     }
 
     private MembershipResponse mapToResponse(OrganizationMembership membership) {
