@@ -72,7 +72,6 @@ public class MembershipService {
             matchingUserIds = response.userIds();
         }
 
-
         Specification<OrganizationMembership> specification =
                 MembershipSpecification.search(organizationId, request, matchingUserIds);
 
@@ -113,6 +112,19 @@ public class MembershipService {
                 pageable,
                 memberships.getTotalElements()
         );
+    }
+
+    public void updateMembershipRole(UUID organizationId, UUID membershipId, UpdateMembershipRoleRequest request){
+
+        OrganizationMembership membership =
+                membershipRepository.findByIdAndOrganizationId(membershipId, organizationId)
+                        .orElseThrow(() -> new MembershipNotFoundException("Membership not found"));
+
+        if(membership.getRole() != request.role()){
+            membership.setRole(request.role());
+
+            membershipRepository.save(membership);
+        }
     }
 
     public void removeMember(UUID organizationId, UUID membershipId) {

@@ -14,7 +14,6 @@ import org.securehub.userservice.exception.UserNotFoundException;
 import org.securehub.userservice.repository.UserInvitationRepository;
 import org.securehub.userservice.repository.UserRepository;
 import org.securehub.userservice.specification.UserSpecification;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,6 +39,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserInvitationRepository userInvitationRepository;
+    private final InvitationService invitationService;
     private final KeycloakAdminService keycloakAdminService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -69,10 +69,7 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        applicationEventPublisher.publishEvent(
-                new UserCreatedDomainEvent(
-                        savedUser.getId()
-                ));
+        invitationService.createAndSendInvitation(savedUser);
 
         return UserResponse.fromEntity(savedUser);
     }

@@ -6,7 +6,7 @@ spring:
     name: user-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/securehub
+    url: jdbc:postgresql://localhost:5433/securehub_user_dev
     username: postgres
     password: postgres
 
