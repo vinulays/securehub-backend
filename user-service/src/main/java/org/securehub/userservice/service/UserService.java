@@ -14,7 +14,6 @@ import org.securehub.userservice.exception.UserNotFoundException;
 import org.securehub.userservice.repository.UserInvitationRepository;
 import org.securehub.userservice.repository.UserRepository;
 import org.securehub.userservice.specification.UserSpecification;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,6 +39,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserInvitationRepository userInvitationRepository;
+    private final InvitationService invitationService;
     private final KeycloakAdminService keycloakAdminService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -69,10 +69,7 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        applicationEventPublisher.publishEvent(
-                new UserCreatedDomainEvent(
-                        savedUser.getId()
-                ));
+        invitationService.createAndSendInvitation(savedUser);
 
         return UserResponse.fromEntity(savedUser);
     }
@@ -248,6 +245,20 @@ public class UserService {
         );
     }
 
+    public UserSummaryResponse getUserSummaryByKeycloakId(String keycloakUserId) {
+
+        User user = userRepository.findByKeycloakUserId(keycloakUserId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        return new UserSummaryResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getIsActive()
+        );
+    }
+
     @Transactional
     public UserResponse updateUserStatus(
             UUID userId,
@@ -270,7 +281,9 @@ public class UserService {
     public AuthenticatedUserResponse getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Jwt jwt = (Jwt) authentication.getPrincipal();
+        if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
+            throw new IllegalStateException("Invalid authentication");
+        }
 
         String keycloakUserId = jwt.getSubject();
 
@@ -280,8 +293,8 @@ public class UserService {
 
         Map<String, Object> realmAccess = jwt.getClaim("realm_access");
 
-        List<String> roles =
-                (List<String>) realmAccess.get("roles");
+        @SuppressWarnings("unchecked")
+        List<String> roles = (List<String>) realmAccess.get("roles");
 
         Set<String> permissions = roles.stream()
                 .flatMap(role -> RolePermissionMapping.ROLE_PERMISSIONS

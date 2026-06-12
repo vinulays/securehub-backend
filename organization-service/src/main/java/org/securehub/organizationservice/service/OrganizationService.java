@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.securehub.organizationservice.dto.*;
 import org.securehub.organizationservice.entity.Organization;
 import org.securehub.organizationservice.entity.OrganizationMembership;
+import org.securehub.organizationservice.enums.OrganizationRole;
+import org.securehub.organizationservice.exception.OrganizationAlreadyExistsException;
 import org.securehub.organizationservice.exception.OrganizationNotFoundException;
 import org.securehub.organizationservice.repository.MembershipRepository;
 import org.securehub.organizationservice.repository.OrganizationRepository;
 import org.securehub.organizationservice.specification.OrganizationSpecification;
+import org.securehub.security.util.JwtUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +33,16 @@ public class OrganizationService {
 
     public OrganizationSummaryResponse createOrganization(CreateOrganizationRequest request) {
 
+        String keycloakUserId = JwtUtils.getUserKeycloakId();
+
+        UserSummaryResponse creator = userLookupService.getUserByKeycloakUserId(keycloakUserId);
+
+        Boolean exists = organizationRepository.existsBySlug(request.slug());
+
+        if (exists) {
+            throw new OrganizationAlreadyExistsException("Organization already exists for the given slug");
+        }
+
         Organization organization = Organization.builder()
                 .name(request.name())
                 .slug(request.slug())
@@ -37,7 +50,18 @@ public class OrganizationService {
                 .isActive(true)
                 .build();
 
-        return mapToOrganizationSummary(organizationRepository.save(organization));
+        Organization savedOrganization = organizationRepository.save(organization);
+
+        OrganizationMembership ownerMembership = OrganizationMembership.builder()
+                .organization(savedOrganization)
+                .userId(creator.id())
+                .role(OrganizationRole.OWNER)
+                .isActive(true)
+                .build();
+
+        membershipRepository.save(ownerMembership);
+
+        return mapToOrganizationSummary(savedOrganization);
     }
 
     public Page<OrganizationSummaryResponse> searchOrganizations(OrganizationSearchRequest request) {

@@ -2,10 +2,7 @@ package org.securehub.organizationservice.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.securehub.organizationservice.dto.CreateMembershipRequest;
-import org.securehub.organizationservice.dto.MembershipDetailsResponse;
-import org.securehub.organizationservice.dto.MembershipResponse;
-import org.securehub.organizationservice.dto.MembershipSearchRequest;
+import org.securehub.organizationservice.dto.*;
 import org.securehub.organizationservice.service.MembershipService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +35,19 @@ public class MembershipController {
         return ResponseEntity.ok(
                 membershipService.addMember(organizationId, request)
         );
+    }
+
+
+    @PatchMapping("/{membershipId}/role")
+    public ResponseEntity<Void> updateMembershipRole(
+            @PathVariable UUID organizationId,
+            @PathVariable UUID membershipId,
+            @Valid @RequestBody UpdateMembershipRoleRequest request
+    ) {
+
+        membershipService.updateMembershipRole(organizationId, membershipId, request);
+
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{membershipId}")
