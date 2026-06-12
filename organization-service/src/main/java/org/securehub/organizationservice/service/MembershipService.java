@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.securehub.organizationservice.dto.*;
 import org.securehub.organizationservice.entity.Organization;
 import org.securehub.organizationservice.entity.OrganizationMembership;
-import org.securehub.organizationservice.exception.MembershipAlreadyExistsException;
-import org.securehub.organizationservice.exception.MembershipNotFoundException;
-import org.securehub.organizationservice.exception.OrganizationNotFoundException;
-import org.securehub.organizationservice.exception.UserNotFoundException;
+import org.securehub.organizationservice.enums.OrganizationRole;
+import org.securehub.organizationservice.exception.*;
 import org.securehub.organizationservice.repository.MembershipRepository;
 import org.securehub.organizationservice.repository.OrganizationRepository;
 import org.securehub.organizationservice.specification.MembershipSpecification;
@@ -35,6 +33,10 @@ public class MembershipService {
 
         Organization organization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException("Organization not found"));
+
+        if (request.role() == OrganizationRole.OWNER) {
+            throw new InvalidRoleOperationException("OWNER role can only be assigned during organization creation");
+        }
 
         UserSummaryResponse user = userLookupService.getUser(request.userId());
 
@@ -119,6 +121,10 @@ public class MembershipService {
         OrganizationMembership membership =
                 membershipRepository.findByIdAndOrganizationId(membershipId, organizationId)
                         .orElseThrow(() -> new MembershipNotFoundException("Membership not found"));
+
+        if (request.role() == OrganizationRole.OWNER) {
+            throw new InvalidRoleOperationException("Cannot assign OWNER role through role update");
+        }
 
         if(membership.getRole() != request.role()){
             membership.setRole(request.role());

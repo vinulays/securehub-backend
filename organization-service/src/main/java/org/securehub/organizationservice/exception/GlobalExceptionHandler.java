@@ -71,6 +71,19 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(OrganizationAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleOrganizationAlreadyExists(
+            OrganizationAlreadyExistsException ex
+    ) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        null
+                ));
+    }
+
     @ExceptionHandler(MembershipNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleMembershipNotFound(
             MembershipNotFoundException ex

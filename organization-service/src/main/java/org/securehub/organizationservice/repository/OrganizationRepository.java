@@ -8,4 +8,7 @@ import java.util.UUID;
 
 public interface OrganizationRepository extends JpaRepository<Organization, UUID>,
         JpaSpecificationExecutor<Organization> {
+
+    Boolean existsBySlug(String slug);
+
 }

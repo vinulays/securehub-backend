@@ -28,6 +28,13 @@ public class InternalUserController {
         return userService.searchUserIds(request);
     }
 
+    @GetMapping("/keycloak/{keycloakUserId}")
+    public ResponseEntity<UserSummaryResponse> getByKeycloakId(@PathVariable String keycloakUserId){
+
+        return ResponseEntity.ok(userService.getUserSummaryByKeycloakId(keycloakUserId));
+
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserSummaryResponse> getUserSummary(@PathVariable UUID id) {
 

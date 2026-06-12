@@ -19,6 +19,9 @@ public interface UserClient {
     @PostMapping("/api/internal/users/search-ids")
     UserIdsResponse searchUserIds(@RequestBody UserSearchIdsRequest request);
 
+    @GetMapping("/api/internal/users/keycloak/{keycloakUserId}")
+    UserSummaryResponse getUserByKeycloakUserId(@PathVariable String keycloakUserId);
+
     @GetMapping("/api/internal/users/{id}")
     UserSummaryResponse getUser(@PathVariable UUID id);
 }

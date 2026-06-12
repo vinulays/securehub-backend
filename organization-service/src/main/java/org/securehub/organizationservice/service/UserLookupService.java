@@ -30,6 +30,10 @@ public class UserLookupService {
         return userClient.searchUserIds(request);
     }
 
+    public UserSummaryResponse getUserByKeycloakUserId(String keycloakUserId) {
+        return userClient.getUserByKeycloakUserId(keycloakUserId);
+    }
+
     public UserSummaryResponse getUser(UUID userId) {
         return userClient.getUser(userId);
     }

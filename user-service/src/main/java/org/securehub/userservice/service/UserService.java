@@ -245,6 +245,20 @@ public class UserService {
         );
     }
 
+    public UserSummaryResponse getUserSummaryByKeycloakId(String keycloakUserId) {
+
+        User user = userRepository.findByKeycloakUserId(keycloakUserId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        return new UserSummaryResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getIsActive()
+        );
+    }
+
     @Transactional
     public UserResponse updateUserStatus(
             UUID userId,
