@@ -281,7 +281,9 @@ public class UserService {
     public AuthenticatedUserResponse getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Jwt jwt = (Jwt) authentication.getPrincipal();
+        if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
+            throw new IllegalStateException("Invalid authentication");
+        }
 
         String keycloakUserId = jwt.getSubject();
 
@@ -291,8 +293,8 @@ public class UserService {
 
         Map<String, Object> realmAccess = jwt.getClaim("realm_access");
 
-        List<String> roles =
-                (List<String>) realmAccess.get("roles");
+        @SuppressWarnings("unchecked")
+        List<String> roles = (List<String>) realmAccess.get("roles");
 
         Set<String> permissions = roles.stream()
                 .flatMap(role -> RolePermissionMapping.ROLE_PERMISSIONS

@@ -39,7 +39,7 @@ public class OrganizationService {
 
         Boolean exists = organizationRepository.existsBySlug(request.slug());
 
-        if(exists){
+        if (exists) {
             throw new OrganizationAlreadyExistsException("Organization already exists for the given slug");
         }
 
