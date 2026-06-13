@@ -1,6 +1,7 @@
 package org.securehub.organizationservice.config;
 
 import feign.Response;
+import feign.RetryableException;
 import feign.codec.ErrorDecoder;
 import org.securehub.organizationservice.exception.UserNotFoundException;
 import org.slf4j.Logger;
@@ -27,10 +28,16 @@ public class UserServiceErrorDecoder implements ErrorDecoder {
 
             case NOT_FOUND -> new UserNotFoundException("User not found in user-service");
 
-            case INTERNAL_SERVER_ERROR -> new RuntimeException("Internal server error");
-
-            case SERVICE_UNAVAILABLE ->
-                    new RuntimeException("User service is currently unavailable. Please try again later.");
+            case SERVICE_UNAVAILABLE,
+                 BAD_GATEWAY,
+                 INTERNAL_SERVER_ERROR,
+                 GATEWAY_TIMEOUT -> new RetryableException(
+                    response.status(),
+                    "User service unavailable, retrying...",
+                    response.request().httpMethod(),
+                    (Long) null,
+                    response.request()
+            );
 
             default -> new RuntimeException("User-service call failed with status: " + response.status());
         };
