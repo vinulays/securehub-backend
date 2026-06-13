@@ -4,7 +4,6 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.UUID;
-import org.securehub.userservice.enums.SortDirection;
 import org.springframework.data.domain.Sort;
 
 import java.util.List;

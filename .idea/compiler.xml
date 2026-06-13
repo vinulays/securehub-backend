@@ -8,7 +8,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="api-gateway" />
-        <module name="auth-service" />
         <module name="securehub-security-starter" />
         <module name="eureka-server" />
         <module name="notification-service" />
@@ -21,6 +20,7 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
         </processorPath>
         <module name="organization-service" />
+        <module name="auth-service" />
         <module name="user-service" />
       </profile>
     </annotationProcessing>

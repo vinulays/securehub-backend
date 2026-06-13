@@ -16,6 +16,12 @@ public class JwtCookieGatewayFilterFactory extends AbstractGatewayFilterFactory<
     public @NonNull GatewayFilter apply(@NonNull Object config) {
 
         return (exchange, chain) -> {
+            String path = exchange.getRequest().getURI().getPath();
+
+            if (path.startsWith("/auth")) {
+                return chain.filter(exchange);
+            }
+
             HttpCookie cookie = exchange.getRequest().getCookies().getFirst("access_token");
 
             if(cookie == null){

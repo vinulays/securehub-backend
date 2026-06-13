@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.securehub.userservice.dto.*;
 import org.securehub.userservice.entity.User;
 import org.securehub.userservice.entity.UserInvitation;
-import org.securehub.userservice.enums.RolePermissionMapping;
+import org.securehub.userservice.enums.UserRolePermissionMapping;
 import org.securehub.userservice.event.UserCreatedDomainEvent;
 import org.securehub.userservice.exception.InvalidInvitationException;
 import org.securehub.userservice.exception.UserAlreadyExistsException;
@@ -297,7 +297,7 @@ public class UserService {
         List<String> roles = (List<String>) realmAccess.get("roles");
 
         Set<String> permissions = roles.stream()
-                .flatMap(role -> RolePermissionMapping.ROLE_PERMISSIONS
+                .flatMap(role -> UserRolePermissionMapping.ROLE_PERMISSIONS
                         .getOrDefault(role, List.of())
                         .stream())
                 .map(Enum::name)
