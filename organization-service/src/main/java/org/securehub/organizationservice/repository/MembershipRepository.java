@@ -14,6 +14,8 @@ public interface MembershipRepository extends
 
     Boolean existsByOrganizationIdAndUserId(UUID organizationId, UUID userId);
 
+    Optional<OrganizationMembership> findByOrganizationIdAndUserId(UUID organizationId, UUID uerId);
+
     List<OrganizationMembership> findByOrganizationId(UUID organizationId);
 
     Optional<OrganizationMembership> findByIdAndOrganizationId(UUID id, UUID organizationId);
