@@ -41,6 +41,7 @@ spring:
 eureka:
   instance:
     prefer-ip-address: true
+    hostname: localhost
 
   client:
     service-url:
@@ -53,6 +54,12 @@ keycloak:
     client-id: admin-cli
     username: admin
     password: admin
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: true
 
 management:
   endpoints:

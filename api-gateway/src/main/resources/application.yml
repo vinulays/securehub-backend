@@ -46,6 +46,27 @@ spring:
                     name: organizationServiceCB
                     fallbackUri: forward:/fallback/organization
 
+            - id: auth-docs
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/auth/v3/api-docs
+              filters:
+                - RewritePath=/auth/v3/api-docs, /v3/api-docs
+
+            - id: user-docs
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/users/v3/api-docs
+              filters:
+                - RewritePath=/users/v3/api-docs, /v3/api-docs
+
+            - id: organization-docs
+              uri: lb://ORGANIZATION-SERVICE
+              predicates:
+                - Path=/organizations/v3/api-docs
+              filters:
+                - RewritePath=/organizations/v3/api-docs, /v3/api-docs
+
 
         default-filters:
           - PreserveHostHeader
@@ -53,6 +74,7 @@ spring:
 eureka:
   instance:
     prefer-ip-address: true
+    hostname: localhost
 
   client:
     service-url:
@@ -89,6 +111,24 @@ resilience4j:
 
       organizationServiceCB:
         timeout-duration: 10s
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+    oauth:
+      client-id: securehub-swagger
+      use-pkce-with-authorization-code-grant: true
+
+    urls:
+      - name: Auth Service
+        url: /auth/v3/api-docs
+
+      - name: User Service
+        url: /users/v3/api-docs
+
+      - name: Organization Service
+        url: /organizations/v3/api-docs
 
 logging:
    level:
