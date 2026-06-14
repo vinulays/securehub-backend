@@ -7,14 +7,12 @@ import org.securehub.userservice.dto.*;
 import org.securehub.userservice.entity.User;
 import org.securehub.userservice.entity.UserInvitation;
 import org.securehub.userservice.enums.UserRolePermissionMapping;
-import org.securehub.userservice.event.UserCreatedDomainEvent;
 import org.securehub.userservice.exception.InvalidInvitationException;
 import org.securehub.userservice.exception.UserAlreadyExistsException;
 import org.securehub.userservice.exception.UserNotFoundException;
 import org.securehub.userservice.repository.UserInvitationRepository;
 import org.securehub.userservice.repository.UserRepository;
 import org.securehub.userservice.specification.UserSpecification;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,7 +39,6 @@ public class UserService {
     private final UserInvitationRepository userInvitationRepository;
     private final InvitationService invitationService;
     private final KeycloakAdminService keycloakAdminService;
-    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
@@ -154,10 +151,7 @@ public class UserService {
 
         userInvitationRepository.invalidateUserInvitations(userId);
 
-        applicationEventPublisher.publishEvent(
-                new UserCreatedDomainEvent(
-                        user.getId()
-                ));
+        invitationService.createAndSendInvitation(user);
     }
 
     @Transactional

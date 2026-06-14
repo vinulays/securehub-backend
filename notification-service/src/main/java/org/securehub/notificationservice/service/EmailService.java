@@ -2,6 +2,7 @@ package org.securehub.notificationservice.service;
 
 import lombok.RequiredArgsConstructor;
 import org.securehub.notificationservice.dto.EmailRequest;
+import org.securehub.notificationservice.dto.MemberAddedEvent;
 import org.securehub.notificationservice.dto.UserCreatedEvent;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -47,5 +48,33 @@ public class EmailService {
                 .formatted(event.firstName(), invitationUrl));
 
         mailSender.send(message);
+    }
+
+    public void sendMemberAddedEmail(MemberAddedEvent event) {
+
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        message.setTo(event.email());
+        message.setSubject("You’ve been added to " + event.organizationName() + " on SecureHub");
+
+        message.setText("""
+                Hello %s,
+                
+                Good news - you’ve been added to an organization on SecureHub.
+                
+                Organization: %s
+                Your Role: %s
+                
+                You can now log in and start collaborating with your team.
+                
+                If you were not expecting this invitation, please contact your organization administrator.
+                
+                Welcome aboard 🚀
+                """
+                .formatted(event.firstName(), event.organizationName(), event.role()));
+
+        mailSender.send(message);
+
+
     }
 }
