@@ -1,7 +1,7 @@
 package org.securehub.userservice.service;
 
 import lombok.RequiredArgsConstructor;
-import org.securehub.userservice.dto.event.UserInvitationCreatedEvent;
+import org.securehub.userservice.dto.event.UserCreatedEvent;
 import org.securehub.userservice.entity.User;
 import org.securehub.userservice.entity.UserInvitation;
 import org.securehub.userservice.producer.UserEventProducer;
@@ -35,7 +35,7 @@ public class InvitationService {
         userInvitationRepository.save(invitation);
 
         userEventProducer.publishUserCreated(
-                new UserInvitationCreatedEvent(
+                new UserCreatedEvent(
                         user.getId(),
                         user.getEmail(),
                         user.getFirstName(),

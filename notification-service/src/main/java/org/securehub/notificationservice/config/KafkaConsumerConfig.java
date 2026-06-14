@@ -2,6 +2,7 @@ package org.securehub.notificationservice.config;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.securehub.notificationservice.dto.MemberAddedEvent;
 import org.securehub.notificationservice.dto.UserCreatedEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,13 +22,26 @@ public class KafkaConsumerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ConsumerFactory<String, UserCreatedEvent> consumerFactory() {
-        JacksonJsonDeserializer<UserCreatedEvent> deserializer = new JacksonJsonDeserializer<>(UserCreatedEvent.class);
+    public ConsumerFactory<String, MemberAddedEvent> memberAddedEventConsumerFactory() {
+        return consumerFactory(MemberAddedEvent.class);
+    }
 
-        deserializer.setRemoveTypeHeaders(false);
-        deserializer.addTrustedPackages("*");
-        deserializer.setUseTypeMapperForKey(true);
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, MemberAddedEvent> memberAddedEventListenerFactory() {
+        return listenerFactory(memberAddedEventConsumerFactory());
+    }
 
+    @Bean
+    public ConsumerFactory<String, UserCreatedEvent> userCreatedEventConsumerFactory() {
+        return consumerFactory(UserCreatedEvent.class);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UserCreatedEvent> userCreatedEventListenerFactory() {
+        return listenerFactory(userCreatedEventConsumerFactory());
+    }
+
+    private Map<String, Object> consumerProps() {
         Map<String, Object> props = new HashMap<>();
 
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -36,15 +50,31 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JacksonJsonDeserializer.class);
 
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+        return props;
     }
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UserCreatedEvent> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, UserCreatedEvent> factory =
+    private <T> ConsumerFactory<String, T> consumerFactory(Class<T> clazz) {
+
+        JacksonJsonDeserializer<T> deserializer = new JacksonJsonDeserializer<>(clazz);
+
+        deserializer.setRemoveTypeHeaders(false);
+        deserializer.addTrustedPackages("*");
+        deserializer.setUseTypeMapperForKey(true);
+
+        return new DefaultKafkaConsumerFactory<>(
+                consumerProps(),
+                new StringDeserializer(),
+                deserializer
+        );
+    }
+
+    private <T> ConcurrentKafkaListenerContainerFactory<String, T> listenerFactory(
+            ConsumerFactory<String, T> consumerFactory
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, T> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
 
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(consumerFactory);
 
         return factory;
     }

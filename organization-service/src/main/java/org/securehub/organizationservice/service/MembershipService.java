@@ -2,10 +2,12 @@ package org.securehub.organizationservice.service;
 
 import lombok.RequiredArgsConstructor;
 import org.securehub.organizationservice.dto.*;
+import org.securehub.organizationservice.dto.event.MemberAddedEvent;
 import org.securehub.organizationservice.entity.Organization;
 import org.securehub.organizationservice.entity.OrganizationMembership;
 import org.securehub.organizationservice.enums.OrganizationRole;
 import org.securehub.organizationservice.exception.*;
+import org.securehub.organizationservice.producer.OrganizationEventProducer;
 import org.securehub.organizationservice.repository.MembershipRepository;
 import org.securehub.organizationservice.repository.OrganizationRepository;
 import org.securehub.organizationservice.specification.MembershipSpecification;
@@ -28,6 +30,7 @@ public class MembershipService {
     private final MembershipRepository membershipRepository;
     private final OrganizationRepository organizationRepository;
     private final UserLookupService userLookupService;
+    private final OrganizationEventProducer organizationEventProducer;
 
     public MembershipResponse addMember(UUID organizationId, CreateMembershipRequest request) {
 
@@ -59,6 +62,16 @@ public class MembershipService {
                 .build();
 
         membership = membershipRepository.save(membership);
+
+        organizationEventProducer.publishMemberAdded(
+                new MemberAddedEvent(
+                        user.id(),
+                        organization.getName(),
+                        user.email(),
+                        user.firstName(),
+                        request.role()
+                )
+        );
 
         return mapToResponse(membership);
     }
@@ -116,7 +129,7 @@ public class MembershipService {
         );
     }
 
-    public void updateMembershipRole(UUID organizationId, UUID membershipId, UpdateMembershipRoleRequest request){
+    public void updateMembershipRole(UUID organizationId, UUID membershipId, UpdateMembershipRoleRequest request) {
 
         OrganizationMembership membership =
                 membershipRepository.findByIdAndOrganizationId(membershipId, organizationId)
@@ -126,7 +139,7 @@ public class MembershipService {
             throw new InvalidRoleOperationException("Cannot assign OWNER role through role update");
         }
 
-        if(membership.getRole() != request.role()){
+        if (membership.getRole() != request.role()) {
             membership.setRole(request.role());
 
             membershipRepository.save(membership);

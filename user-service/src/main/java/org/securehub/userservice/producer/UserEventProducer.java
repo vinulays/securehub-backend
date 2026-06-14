@@ -1,7 +1,7 @@
 package org.securehub.userservice.producer;
 
 import lombok.RequiredArgsConstructor;
-import org.securehub.userservice.dto.event.UserInvitationCreatedEvent;
+import org.securehub.userservice.dto.event.UserCreatedEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserEventProducer {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, UserCreatedEvent> userInvitationCreatedEventKafkaTemplate;
 
-    public void publishUserCreated(UserInvitationCreatedEvent event) {
+    public void publishUserCreated(UserCreatedEvent event) {
 
-        kafkaTemplate.send(
+        userInvitationCreatedEventKafkaTemplate.send(
                 "user.created",
                 event.userId().toString(),
                 event

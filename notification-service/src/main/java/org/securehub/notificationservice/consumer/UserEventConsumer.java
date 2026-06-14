@@ -10,11 +10,15 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserCreatedConsumer {
+public class UserEventConsumer {
 
     private final EmailService emailService;
 
-    @KafkaListener(topics = "user.created", groupId = "notification-group")
+    @KafkaListener(
+            topics = "user.created",
+            groupId = "notification-group",
+            containerFactory = "userCreatedEventListenerFactory"
+    )
     public void consumer(UserCreatedEvent event) {
 
         emailService.sendInvitationEmail(event);

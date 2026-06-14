@@ -1,4 +1,4 @@
-package org.securehub.userservice.config;
+package org.securehub.organizationservice.config;
 
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -27,9 +27,9 @@ public class KafkaTopicConfig {
     }
 
     @Bean
-    public NewTopic userCreatedTopic(){
+    public NewTopic memberAddedTopic() {
         return TopicBuilder
-                .name("user.created")
+                .name("organization.member.added")
                 .partitions(1)
                 .replicas(1)
                 .build();
