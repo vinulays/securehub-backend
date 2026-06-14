@@ -29,7 +29,18 @@ public class SecurityAutoConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/**", "/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/actuator/**",
+                                "/api/auth/**",
+
+                                "/v3/api-docs/**",
+                                "/auth/v3/api-docs/**",
+                                "/users/v3/api-docs/**",
+                                "/organizations/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/webjars/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.accessDeniedHandler(handler))
