@@ -74,6 +74,7 @@ spring:
 eureka:
   instance:
     prefer-ip-address: true
+    hostname: localhost
 
   client:
     service-url:
@@ -114,6 +115,11 @@ resilience4j:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+    oauth:
+      client-id: securehub-swagger
+      use-pkce-with-authorization-code-grant: true
+
     urls:
       - name: Auth Service
         url: /auth/v3/api-docs
