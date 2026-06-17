@@ -22,6 +22,9 @@ public class AuthService {
     @Value("${keycloak.token-url}")
     private String tokenUrl;
 
+    @Value("${keycloak.logout-url}")
+    private String logoutUrl;
+
     @Value("${keycloak.client-id}")
     private String clientId;
 
@@ -61,6 +64,26 @@ public class AuthService {
                                 ))
                 )
                 .bodyToMono(KeycloakTokenResponse.class)
+                .block();
+    }
+
+    public void logout(String refreshToken) {
+
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return;
+        }
+
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("client_id", clientId);
+        formData.add("client_secret", clientSecret);
+        formData.add("refresh_token", refreshToken);
+
+        webClient.post()
+                .uri(logoutUrl)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue(formData)
+                .retrieve()
+                .toBodilessEntity()
                 .block();
     }
 

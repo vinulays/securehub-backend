@@ -10,6 +10,9 @@ public record KeycloakTokenResponse(
         String refreshToken,
 
         @JsonProperty("expires_in")
-        Long expiresIn
+        Integer expiresIn,
+
+        @JsonProperty("refresh_expires_in")
+        Integer refreshExpiresIn
 ) {
 }

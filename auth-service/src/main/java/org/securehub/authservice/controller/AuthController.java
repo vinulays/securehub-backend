@@ -24,9 +24,9 @@ public class AuthController {
 
         KeycloakTokenResponse token = authService.login(request);
 
-        CookieUtil.addHttpOnlyCookie(response, "access_token", token.accessToken(), 3600);
+        CookieUtil.addHttpOnlyCookie(response, "access_token", token.accessToken(), token.expiresIn());
 
-        CookieUtil.addHttpOnlyCookie(response, "refresh_token", token.refreshToken(), 7 * 24 * 3600);
+        CookieUtil.addHttpOnlyCookie(response, "refresh_token", token.refreshToken(), token.refreshExpiresIn());
 
         return ResponseEntity.ok(Map.of("message", "Login successful"));
     }
@@ -36,13 +36,27 @@ public class AuthController {
 
         KeycloakTokenResponse token = authService.refresh(refreshToken);
 
-        CookieUtil.addHttpOnlyCookie(response, "access_token", token.accessToken(), 3600);
+        CookieUtil.addHttpOnlyCookie(response, "access_token", token.accessToken(), token.expiresIn());
+
+        if (token.refreshToken() != null) {
+            CookieUtil.addHttpOnlyCookie(
+                    response,
+                    "refresh_token",
+                    token.refreshToken(),
+                    token.refreshExpiresIn()
+            );
+        }
 
         return ResponseEntity.ok(Map.of("message", "Token refreshed"));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(
+            @CookieValue(value = "refresh_token", required = false) String refreshToken,
+            HttpServletResponse response
+    ) {
+
+        authService.logout(refreshToken);
 
         CookieUtil.clearCookie(response, "access_token");
         CookieUtil.clearCookie(response, "refresh_token");

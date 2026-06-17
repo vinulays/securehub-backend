@@ -23,5 +23,6 @@ springdoc:
 keycloak:
   token-url: http://localhost:8081/realms/securehub/protocol/openid-connect/token
   cert-url: http://localhost:8081/realms/securehub/protocol/openid-connect/certs
+  logout-url: http://localhost:8081/realms/securehub/protocol/openid-connect/logout
   client-id: securehub-client
   client-secret: ${KEYCLOAK_CLIENT_SECRET}
