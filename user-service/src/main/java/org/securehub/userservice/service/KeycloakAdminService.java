@@ -2,9 +2,11 @@ package org.securehub.userservice.service;
 
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -13,10 +15,14 @@ import org.securehub.userservice.exception.KeycloakException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class KeycloakAdminService {
 
     private final Keycloak keycloak;
@@ -111,6 +117,27 @@ public class KeycloakAdminService {
                 .users()
                 .get(keycloakUserId)
                 .update(user);
+    }
+
+    public void updateUserAttribute(String keycloakUserId, UUID userId, String attributeName) {
+
+        UserResource userResource = keycloak.realm(realmName)
+                .users()
+                .get(keycloakUserId);
+
+        UserRepresentation user = userResource.toRepresentation();
+
+        Map<String, List<String>> attributes = user.getAttributes();
+
+        if (attributes == null) {
+            attributes = new HashMap<>();
+        }
+
+        attributes.put(attributeName, List.of(userId.toString()));
+
+        user.setAttributes(attributes);
+
+        userResource.update(user);
     }
 
 }

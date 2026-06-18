@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,12 +31,11 @@ public class OrganizationService {
     private final OrganizationRepository organizationRepository;
     private final MembershipRepository membershipRepository;
     private final UserLookupService userLookupService;
+    private final OrganizationAuthorizationService organizationAuthorizationService;
 
     public OrganizationSummaryResponse createOrganization(CreateOrganizationRequest request) {
 
-        String keycloakUserId = JwtUtils.getUserKeycloakId();
-
-        UserSummaryResponse creator = userLookupService.getUserByKeycloakUserId(keycloakUserId);
+        UUID userId = JwtUtils.getUserId();
 
         Boolean exists = organizationRepository.existsBySlug(request.slug());
 
@@ -54,7 +54,7 @@ public class OrganizationService {
 
         OrganizationMembership ownerMembership = OrganizationMembership.builder()
                 .organization(savedOrganization)
-                .userId(creator.id())
+                .userId(userId)
                 .role(OrganizationRole.OWNER)
                 .isActive(true)
                 .build();
@@ -65,7 +65,26 @@ public class OrganizationService {
     }
 
     public Page<OrganizationSummaryResponse> searchOrganizations(OrganizationSearchRequest request) {
+
+        UUID userId = JwtUtils.getUserId();
+
+        boolean isAdmin = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+
         Specification<Organization> specification = OrganizationSpecification.search(request);
+
+        if (!isAdmin) {
+
+            List<UUID> allowedOrgIds = membershipRepository
+                    .findOrganizationIdsByUserIdAndIsActiveTrue(userId);
+
+            specification = specification.and((root, query, cb) ->
+                    root.get("id").in(allowedOrgIds)
+            );
+        }
 
         String sortBy = ALLOWED_SORT_FIELDS.contains(request.sortBy()) ? request.sortBy() : "createdAt";
 
@@ -102,6 +121,11 @@ public class OrganizationService {
     }
 
     public OrganizationDetailsResponse getOrganizationDetails(UUID organizationId) {
+
+        UUID userId = JwtUtils.getUserId();
+
+        organizationAuthorizationService.validateOrganizationAccess(organizationId, userId);
+
         Organization organization = organizationRepository
                 .findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException("Organization not found"));
@@ -135,6 +159,10 @@ public class OrganizationService {
     }
 
     public void updateOrganizationStatus(UUID organizationId, boolean active) {
+        UUID userId = JwtUtils.getUserId();
+
+        organizationAuthorizationService.validateOrganizationAccess(organizationId, userId);
+
         Organization organization = organizationRepository
                 .findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException("Organization not found"));
@@ -143,6 +171,8 @@ public class OrganizationService {
 
         organizationRepository.save(organization);
     }
+
+
 
     private OrganizationSummaryResponse mapToOrganizationSummary(Organization org) {
         return new OrganizationSummaryResponse(

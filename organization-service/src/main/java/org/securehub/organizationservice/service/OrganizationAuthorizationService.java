@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.securehub.organizationservice.entity.OrganizationMembership;
 import org.securehub.organizationservice.enums.OrganizationPermission;
 import org.securehub.organizationservice.enums.OrganizationRolePermissionMapping;
+import org.securehub.organizationservice.exception.OrganizationAccessDeniedException;
 import org.securehub.organizationservice.repository.MembershipRepository;
 import org.springframework.stereotype.Service;
 
@@ -29,5 +30,17 @@ public class OrganizationAuthorizationService {
                         .getOrDefault(role, List.of()))
                 .map(permissions -> permissions.contains(permission))
                 .orElse(false);
+    }
+
+    public void validateOrganizationAccess(UUID organizationId, UUID userId) {
+
+        boolean hasAccess = membershipRepository.existsByOrganizationIdAndUserIdAndIsActiveTrue(
+                organizationId,
+                userId
+        );
+
+        if (!hasAccess) {
+            throw new OrganizationAccessDeniedException("You don't have access to this organization");
+        }
     }
 }

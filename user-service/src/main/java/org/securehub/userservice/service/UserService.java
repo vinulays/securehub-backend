@@ -66,6 +66,9 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
+        UUID userId = savedUser.getId();
+        keycloakAdminService.updateUserAttribute(keycloakUserId, userId, "user_id");
+
         invitationService.createAndSendInvitation(savedUser);
 
         return UserResponse.fromEntity(savedUser);
@@ -323,7 +326,11 @@ public class UserService {
 
                     user.setIsActive(true);
 
-                    return userRepository.save(user);
+                    User savedUser = userRepository.save(user);
+
+                    keycloakAdminService.updateUserAttribute(keycloakUserId, savedUser.getId(), "user_id");
+
+                    return savedUser;
                 });
     }
 

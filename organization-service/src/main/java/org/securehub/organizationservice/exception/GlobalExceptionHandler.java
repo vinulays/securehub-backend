@@ -135,4 +135,17 @@ public class GlobalExceptionHandler {
                         null
                 ));
     }
+
+    @ExceptionHandler(OrganizationAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleOrganizationAccessDenied(
+            OrganizationAccessDeniedException ex
+    ) {
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.FORBIDDEN.value(),
+                        null
+                ));
+    }
 }

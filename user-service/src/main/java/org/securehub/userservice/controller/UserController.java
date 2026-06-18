@@ -3,7 +3,7 @@ package org.securehub.userservice.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.securehub.userservice.dto.*;
-import org.securehub.userservice.dto.AuthenticatedUserResponse;
+import org.securehub.userservice.service.KeycloakBackfillService;
 import org.securehub.userservice.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +18,17 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final KeycloakBackfillService keycloakBackfillService;
+
+
+    @PostMapping("/backfill-user-ids")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> backfill() {
+
+        keycloakBackfillService.backfillUserIds();
+
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")
