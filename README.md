@@ -22,7 +22,7 @@ Core components include:
 
 ## Technology Stack
 
-- Java 26
+- Java 25
 - Spring Boot 4.0.6
 - Spring Security + OAuth2 Resource Server
 - Spring Cloud Gateway
