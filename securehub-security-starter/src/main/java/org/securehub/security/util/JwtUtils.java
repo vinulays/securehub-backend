@@ -35,4 +35,25 @@ public class JwtUtils {
                 jwt.getClaimAsString("user_id")
         );
     }
+
+    public static boolean hasRole(String role) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new IllegalStateException(("Invalid authentication"));
+        }
+
+        return authentication.getAuthorities().
+                stream()
+                .anyMatch(authority -> {
+                    if (authority.getAuthority() != null) {
+                        return authority.getAuthority().equals("ROLE_" + role);
+                    }
+
+                    return false;
+
+                });
+    }
 }

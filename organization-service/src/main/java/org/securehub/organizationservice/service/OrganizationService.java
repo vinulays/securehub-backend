@@ -16,7 +16,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -68,11 +67,7 @@ public class OrganizationService {
 
         UUID userId = JwtUtils.getUserId();
 
-        boolean isAdmin = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getAuthorities()
-                .stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = JwtUtils.hasRole("ADMIN");
 
         Specification<Organization> specification = OrganizationSpecification.search(request);
 
@@ -171,7 +166,6 @@ public class OrganizationService {
 
         organizationRepository.save(organization);
     }
-
 
 
     private OrganizationSummaryResponse mapToOrganizationSummary(Organization org) {
