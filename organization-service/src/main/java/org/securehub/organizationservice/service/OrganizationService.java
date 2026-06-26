@@ -2,6 +2,7 @@ package org.securehub.organizationservice.service;
 
 import lombok.RequiredArgsConstructor;
 import org.securehub.organizationservice.dto.*;
+import org.securehub.organizationservice.dto.event.MyOrganizationResponse;
 import org.securehub.organizationservice.entity.Organization;
 import org.securehub.organizationservice.entity.OrganizationMembership;
 import org.securehub.organizationservice.enums.OrganizationRole;
@@ -76,7 +77,7 @@ public class OrganizationService {
             List<UUID> allowedOrgIds = membershipRepository
                     .findOrganizationIdsByUserIdAndIsActiveTrue(userId);
 
-            specification = specification.and((root, query, cb) ->
+            specification = specification.and((root, _, _) ->
                     root.get("id").in(allowedOrgIds)
             );
         }
@@ -97,6 +98,20 @@ public class OrganizationService {
         return organizationRepository
                 .findAll(specification, pageable)
                 .map(this::mapToOrganizationSummary);
+    }
+
+    public List<MyOrganizationResponse> getMyOrganizations() {
+
+        UUID userId = JwtUtils.getUserId();
+
+        return this.organizationRepository.findOrganizationByUserId(userId)
+                .stream()
+                .map((organization) -> new MyOrganizationResponse(
+                        organization.getId(),
+                        organization.getName(),
+                        organization.getSlug()
+                ))
+                .toList();
     }
 
     public OrganizationSummaryResponse updateOrganization(UUID id, UpdateOrganizationRequest request) {

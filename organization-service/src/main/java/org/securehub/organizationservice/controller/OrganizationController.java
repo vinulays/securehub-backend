@@ -3,12 +3,14 @@ package org.securehub.organizationservice.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.securehub.organizationservice.dto.*;
+import org.securehub.organizationservice.dto.event.MyOrganizationResponse;
 import org.securehub.organizationservice.service.OrganizationService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -34,6 +36,12 @@ public class OrganizationController {
         return ResponseEntity.ok(
                 organizationService.searchOrganizations(request)
         );
+    }
+
+    @GetMapping("/my-organizations")
+    public ResponseEntity<List<MyOrganizationResponse>> getMyOrganizations() {
+
+        return ResponseEntity.ok(organizationService.getMyOrganizations());
     }
 
     @GetMapping("/{id}")
