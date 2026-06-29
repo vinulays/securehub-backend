@@ -308,7 +308,8 @@ public class UserService {
                 email,
                 user.getFirstName(),
                 user.getLastName(),
-                permissions
+                permissions,
+                roles
         );
 
     }
