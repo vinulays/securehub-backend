@@ -1,6 +1,5 @@
 package org.securehub.userservice.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
