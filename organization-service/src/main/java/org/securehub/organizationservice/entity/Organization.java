@@ -2,6 +2,7 @@ package org.securehub.organizationservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.securehub.organizationservice.enums.OrganizationStatus;
 
 @Entity
 @Table(name = "organizations")
@@ -20,6 +21,7 @@ public class Organization extends BaseEntity {
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Boolean isActive = true;
+    private OrganizationStatus status;
 }

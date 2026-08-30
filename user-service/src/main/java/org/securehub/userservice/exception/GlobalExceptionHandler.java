@@ -96,4 +96,17 @@ public class GlobalExceptionHandler {
                         null
                 ));
     }
+
+    @ExceptionHandler(OrganizationMembershipException.class)
+    public ResponseEntity<ErrorResponse> handleOrganizationMembership(
+            OrganizationMembershipException ex
+    ) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        null
+                ));
+    }
 }

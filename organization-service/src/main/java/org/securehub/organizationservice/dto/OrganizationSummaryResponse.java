@@ -1,5 +1,8 @@
 package org.securehub.organizationservice.dto;
 
+import org.securehub.organizationservice.enums.OrganizationStatus;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record OrganizationSummaryResponse(
@@ -7,6 +10,7 @@ public record OrganizationSummaryResponse(
         String name,
         String slug,
         String description,
-        Boolean isActive
+        OrganizationStatus status,
+        LocalDateTime createdAt
 ) {
 }

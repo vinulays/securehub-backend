@@ -19,6 +19,10 @@ public class OrganizationPermissionEvaluator {
             OrganizationPermission permission
     ) {
 
+        if (JwtUtils.hasRole("ADMIN")) {
+            return true;
+        }
+
         String keycloakUserId = JwtUtils.getUserKeycloakId();
 
         UUID userId = userLookupService.getUserByKeycloakUserId(keycloakUserId).id();
