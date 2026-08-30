@@ -3,6 +3,7 @@ package org.securehub.organizationservice.specification;
 import jakarta.persistence.criteria.Predicate;
 import org.securehub.organizationservice.dto.OrganizationSearchRequest;
 import org.securehub.organizationservice.entity.Organization;
+import org.securehub.organizationservice.enums.OrganizationStatus;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
@@ -24,7 +25,11 @@ public class OrganizationSpecification {
             }
 
             if (request.isActive() != null) {
-                predicates.add(cb.equal(root.get("isActive"), request.isActive()));
+                OrganizationStatus status = request.isActive()
+                        ? OrganizationStatus.ACTIVE
+                        : OrganizationStatus.INACTIVE;
+
+                predicates.add(cb.equal(root.get("status"), status));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

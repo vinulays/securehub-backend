@@ -6,6 +6,7 @@ import org.securehub.organizationservice.dto.event.MyOrganizationResponse;
 import org.securehub.organizationservice.entity.Organization;
 import org.securehub.organizationservice.entity.OrganizationMembership;
 import org.securehub.organizationservice.enums.OrganizationRole;
+import org.securehub.organizationservice.enums.OrganizationStatus;
 import org.securehub.organizationservice.exception.OrganizationAlreadyExistsException;
 import org.securehub.organizationservice.exception.OrganizationNotFoundException;
 import org.securehub.organizationservice.repository.MembershipRepository;
@@ -47,7 +48,7 @@ public class OrganizationService {
                 .name(request.name())
                 .slug(request.slug())
                 .description(request.description())
-                .isActive(true)
+                .status(OrganizationStatus.ACTIVE)
                 .build();
 
         Organization savedOrganization = organizationRepository.save(organization);
@@ -163,7 +164,8 @@ public class OrganizationService {
                 organization.getName(),
                 organization.getSlug(),
                 organization.getDescription(),
-                organization.getIsActive(),
+                organization.getStatus(),
+                organization.getCreatedAt(),
                 memberResponses
         );
     }
@@ -177,7 +179,7 @@ public class OrganizationService {
                 .findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException("Organization not found"));
 
-        organization.setIsActive(active);
+        organization.setStatus(active ? OrganizationStatus.ACTIVE : OrganizationStatus.INACTIVE);
 
         organizationRepository.save(organization);
     }
@@ -189,7 +191,8 @@ public class OrganizationService {
                 org.getName(),
                 org.getSlug(),
                 org.getDescription(),
-                org.getIsActive()
+                org.getStatus(),
+                org.getCreatedAt()
         );
     }
 

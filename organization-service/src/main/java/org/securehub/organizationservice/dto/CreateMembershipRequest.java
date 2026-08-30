@@ -11,6 +11,10 @@ public record CreateMembershipRequest(
         UUID userId,
 
         @NotNull(message = "Organization role is required")
-        OrganizationRole role
+        OrganizationRole role,
+
+        String email,
+
+        String firstName
 ) {
 }

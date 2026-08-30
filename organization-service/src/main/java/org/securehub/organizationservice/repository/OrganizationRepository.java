@@ -20,7 +20,7 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
                         ON m.organization.id = o.id
                     WHERE m.userId = :userId
                         AND m.isActive = true
-                        AND o.isActive = true
+                        AND o.status = OrganizationStatus.ACTIVE
                     ORDER BY o.name
             """)
     List<Organization> findOrganizationByUserId(UUID userId);

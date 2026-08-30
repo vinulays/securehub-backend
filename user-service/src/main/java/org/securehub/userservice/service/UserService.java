@@ -2,6 +2,7 @@ package org.securehub.userservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.securehub.userservice.client.OrganizationClient;
 import org.securehub.userservice.dto.*;
 import org.securehub.userservice.entity.User;
 import org.securehub.userservice.entity.UserInvitation;
@@ -39,6 +40,7 @@ public class UserService {
     private final UserInvitationRepository userInvitationRepository;
     private final InvitationService invitationService;
     private final KeycloakAdminService keycloakAdminService;
+    private final OrganizationClient organizationClient;
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
@@ -68,6 +70,16 @@ public class UserService {
 
         UUID userId = savedUser.getId();
         keycloakAdminService.updateUserAttribute(keycloakUserId, userId, "user_id");
+
+        organizationClient.addMember(
+                UUID.fromString(request.organizationId()),
+                new CreateMembershipRequest(
+                        userId,
+                        request.organizationRole(),
+                        savedUser.getEmail(),
+                        savedUser.getFirstName()
+                )
+        );
 
         invitationService.createAndSendInvitation(savedUser);
 
@@ -132,7 +144,7 @@ public class UserService {
 
         return new InvitationValidationResponse(
                 true,
-                user.getLastName(),
+                user.getFirstName(),
                 user.getLastName(),
                 user.getEmail()
         );

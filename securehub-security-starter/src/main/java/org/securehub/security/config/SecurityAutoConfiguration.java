@@ -36,6 +36,8 @@ public class SecurityAutoConfiguration {
                                 "/actuator/**",
                                 "/api/auth/**",
 
+                                "/api/users/invitations/**",
+
                                 "/v3/api-docs/**",
                                 "/auth/v3/api-docs/**",
                                 "/users/v3/api-docs/**",

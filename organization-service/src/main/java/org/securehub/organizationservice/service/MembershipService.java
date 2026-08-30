@@ -41,12 +41,6 @@ public class MembershipService {
             throw new InvalidRoleOperationException("OWNER role can only be assigned during organization creation");
         }
 
-        UserSummaryResponse user = userLookupService.getUser(request.userId());
-
-        if (user == null || user.isActive() == false) {
-            throw new UserNotFoundException("User is not active or does not exist");
-        }
-
         boolean membershipExists = membershipRepository
                 .existsByOrganizationIdAndUserId(organizationId, request.userId());
 
@@ -62,6 +56,8 @@ public class MembershipService {
                 .build();
 
         membership = membershipRepository.save(membership);
+
+        UserSummaryResponse user = resolveUserForEvent(request);
 
         organizationEventProducer.publishMemberAdded(
                 new MemberAddedEvent(
@@ -164,5 +160,26 @@ public class MembershipService {
                 membership.getRole(),
                 membership.getIsActive()
         );
+    }
+
+    private UserSummaryResponse resolveUserForEvent(CreateMembershipRequest request) {
+
+        if (StringUtils.hasText(request.email()) && StringUtils.hasText(request.firstName())) {
+            return new UserSummaryResponse(
+                    request.userId(),
+                    request.email(),
+                    request.firstName(),
+                    null,
+                    null
+            );
+        }
+
+        UserSummaryResponse user = userLookupService.getUser(request.userId());
+
+        if (user == null) {
+            throw new UserNotFoundException("User does not exist");
+        }
+
+        return user;
     }
 }

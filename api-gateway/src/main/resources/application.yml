@@ -24,6 +24,16 @@ spring:
                     name: authServiceCB
                     fallbackUri: forward:/fallback/auth
 
+            - id: user-service-public-invitations
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/users/invitations/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: userServiceCB
+                    fallbackUri: forward:/fallback/user
+
             - id: user-service
               uri: lb://USER-SERVICE
               predicates:
